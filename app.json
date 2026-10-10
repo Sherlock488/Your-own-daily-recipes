@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Nourish",
+    "slug": "nourish-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "nourish",
+    "splash": {
+      "backgroundColor": "#FAF8F3"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.nourish"
+    },
+    "android": {
+      "package": "com.example.nourish"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Nourish needs photo access so you can scan ingredients and grocery receipts.",
+          "cameraPermission": "Nourish needs camera access so you can photograph ingredients and grocery receipts."
+        }
+      ]
+    ]
+  }
+}
