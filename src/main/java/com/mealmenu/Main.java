@@ -1,13 +1,9 @@
 package com.mealmenu;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
-import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -22,6 +18,8 @@ import javafx.util.Duration;
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class Main extends Application {
@@ -43,8 +41,7 @@ public class Main extends Application {
     private NavigationBar navigationBar;
     private MealPlanStore mealPlanStore;
     private LocalAccountService accountService;
-    private Node currentPage;
-    private ParallelTransition pageTransition;
+    private SwipeNavigator swipeNavigator;
     private double dragOffsetX;
     private double dragOffsetY;
 
@@ -201,7 +198,10 @@ public class Main extends Application {
 
     private void showAuthPage() {
         pageHost = null;
-        currentPage = null;
+        if (swipeNavigator != null) {
+            swipeNavigator.dispose();
+            swipeNavigator = null;
+        }
         screenSurface.getChildren().setAll(new AuthPage(
                 primaryStage,
                 accountService,

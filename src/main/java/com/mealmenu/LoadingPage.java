@@ -40,7 +40,7 @@ public class LoadingPage extends VBox {
         );
         drawUtensils(canvas);
 
-        Label title = new Label("Daily Menu");
+        Label title = new Label("dailyrecipes");
         title.getStyleClass().add("loading-title");
 
         statusLabel = new Label("Preparing your kitchen...");

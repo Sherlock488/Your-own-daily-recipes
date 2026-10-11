@@ -190,7 +190,7 @@ public final class HomePage extends ScrollPane {
         todayDate.setText(now.format(DateTimeFormatter.ofPattern(
                 "EEEE, MMMM d, yyyy", Locale.ENGLISH)));
         clock.setText(now.format(DateTimeFormatter.ofPattern("h:mm:ss a", Locale.ENGLISH)));
-        daysUsing.setText("Day " + usageTracker.daysUsing() + " with Daily Menu");
+        daysUsing.setText("Day " + usageTracker.daysUsing() + " with dailyrecipes");
     }
 
     private String currentUsername() {
@@ -263,7 +263,7 @@ public final class HomePage extends ScrollPane {
                 event.consume();
                 return;
             }
-            if (event.getButton() == MouseButton.PRIMARY) {
+            if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()) {
                 AppDialogs.showRecipeDetails(owner, recipe);
             }
         });
