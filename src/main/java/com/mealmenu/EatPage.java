@@ -48,6 +48,8 @@ public final class EatPage extends BorderPane {
         DIET_FILTERS.put("No Wheat", item -> !item.icons().isEmpty() && !item.icons().contains("Wheat"));
         DIET_FILTERS.put("No Nuts", item -> !item.icons().isEmpty() && !item.icons().contains("Peanuts")
                 && !item.icons().contains("Tree Nuts"));
+        DIET_FILTERS.put("No Seafood", item -> !item.icons().isEmpty()
+                && !item.icons().contains("Fish") && !item.icons().contains("Shellfish"));
         DIET_FILTERS.put("No Shellfish", item -> !item.icons().isEmpty()
                 && !item.icons().contains("Shellfish"));
     }
@@ -88,16 +90,25 @@ public final class EatPage extends BorderPane {
     private final VBox restaurantList = new VBox(9);
 
     private final boolean wide;
+    private final java.nio.file.Path filterFile;
+    private final ToggleButton openNow = new ToggleButton("Open now");
     private final ScrollPane restaurantDetailPane = new ScrollPane();
     private RestaurantCatalog.Restaurant selectedRestaurant;
 
     public EatPage(Stage owner, PlanAdder planAdder) {
-        this(owner, false, planAdder);
+        this(owner, false, null, planAdder);
     }
 
     /** {@code wide} lays the page out in columns for the desktop window. */
     public EatPage(Stage owner, boolean wide, PlanAdder planAdder) {
+        this(owner, wide, null, planAdder);
+    }
+
+    /** {@code accountId} (nullable) lets the page remember the user's diet filters. */
+    public EatPage(Stage owner, boolean wide, String accountId, PlanAdder planAdder) {
         this.owner = owner;
+        this.filterFile = accountId == null || accountId.isBlank() ? null
+                : UserDataPaths.accountDirectory(accountId).resolve("eat-filters.txt");
         this.wide = wide;
         this.planAdder = planAdder;
         if (wide) {
@@ -198,10 +209,14 @@ public final class EatPage extends BorderPane {
         for (String diet : DIET_FILTERS.keySet()) {
             ToggleButton button = chip(diet);
             button.getStyleClass().add("small-chip");
-            button.setOnAction(event -> renderStations());
+            button.setOnAction(event -> {
+                saveFilters();
+                renderStations();
+            });
             dietButtons.put(diet, button);
             dietChoices.getChildren().add(button);
         }
+        loadFilters();
         dishSearch.setPromptText("Search dishes, e.g. chicken, tofu, pizza");
         dishSearch.textProperty().addListener((observable, old, text) -> renderStations());
 
@@ -229,6 +244,55 @@ public final class EatPage extends BorderPane {
                 mealSlug = defaultMeal();
                 selectHall(hall);
             }
+        }
+    }
+
+    /** Opens the Dining Halls view on one hall (used by the Home "Eat now" card). */
+    public void showHall(String slug) {
+        dining.hall(slug).ifPresent(target -> {
+            date = LocalDate.now(Campus.ZONE);
+            mealSlug = null;
+            for (Node node : diningContent.lookupAll(".tag-choice")) {
+                if (node instanceof ToggleButton button && button.getText().equals(target.shortName())) {
+                    button.setSelected(true);
+                }
+            }
+            for (Node node : lookupAll(".mode-button")) {
+                if (node instanceof ToggleButton button && button.getText().equals("Dining Halls")) {
+                    button.setSelected(true);
+                }
+            }
+            selectHall(target);
+        });
+    }
+
+    private void loadFilters() {
+        if (filterFile == null || !java.nio.file.Files.isRegularFile(filterFile)) {
+            return;
+        }
+        try {
+            for (String name : java.nio.file.Files.readAllLines(filterFile)) {
+                ToggleButton button = dietButtons.get(name.strip());
+                if (button != null) {
+                    button.setSelected(true);
+                }
+            }
+        } catch (java.io.IOException ignored) {
+            // Filters just start unselected.
+        }
+    }
+
+    private void saveFilters() {
+        if (filterFile == null) {
+            return;
+        }
+        List<String> selected = dietButtons.entrySet().stream()
+                .filter(entry -> entry.getValue().isSelected()).map(Map.Entry::getKey).toList();
+        try {
+            java.nio.file.Files.createDirectories(filterFile.getParent());
+            java.nio.file.Files.write(filterFile, selected);
+        } catch (java.io.IOException ignored) {
+            // Not critical; the choice still applies for this session.
         }
     }
 
@@ -262,22 +326,8 @@ public final class EatPage extends BorderPane {
     }
 
     private String defaultMeal() {
-        LocalTime now = LocalTime.now(Campus.ZONE);
-        boolean weekend = date.getDayOfWeek() == DayOfWeek.SATURDAY
-                || date.getDayOfWeek() == DayOfWeek.SUNDAY;
-        String preferred;
-        if (now.isBefore(LocalTime.of(10, 30)) && !weekend) {
-            preferred = "breakfast";
-        } else if (now.isBefore(LocalTime.of(16, 0))) {
-            preferred = "lunch";
-        } else if (now.isBefore(LocalTime.of(21, 0))) {
-            preferred = "dinner";
-        } else {
-            preferred = "knight";
-        }
-        return hall.meals().stream().map(DiningService.Meal::slug)
-                .filter(slug -> slug.contains(preferred)).findFirst()
-                .orElse(hall.meals().isEmpty() ? null : hall.meals().get(0).slug());
+        java.time.ZonedDateTime now = java.time.ZonedDateTime.now(Campus.ZONE);
+        return DiningService.currentMealSlug(hall, now.with(date));
     }
 
     private void changeDay(int delta) {
@@ -296,7 +346,9 @@ public final class EatPage extends BorderPane {
         previousDay.setDisable(!date.isAfter(LocalDate.now(Campus.ZONE)));
         nextDay.setDisable(!date.isBefore(LocalDate.now(Campus.ZONE).plusDays(MAX_DAYS_AHEAD)));
         dateLabel.setText(dayLabel(date));
-        hallInfo.setText(hall.campus() + " · " + hall.hoursOn(date) + "\n" + hall.address());
+        String openStatus = date.equals(LocalDate.now(Campus.ZONE))
+                ? hall.openHours().status(java.time.ZonedDateTime.now(Campus.ZONE)).text() + " · " : "";
+        hallInfo.setText(hall.campus() + " · " + openStatus + hall.hoursOn(date) + "\n" + hall.address());
         diningStatus.setText("Loading menu…");
         stations = List.of();
         stationList.getChildren().clear();
@@ -305,7 +357,7 @@ public final class EatPage extends BorderPane {
             if (request != menuRequest) {
                 return;
             }
-            stations = mainStationsFirst(result.stations());
+            stations = DiningService.mainStationsFirst(result.stations());
             diningStatus.setText(result.source());
             renderStations();
         }));
@@ -343,33 +395,6 @@ public final class EatPage extends BorderPane {
         if (shown == 0) {
             stationList.getChildren().add(muted("No dishes match these filters."));
         }
-    }
-
-    private static final List<String> MAIN_STATIONS = List.of("entree", "grill", "rotisserie", "pub",
-            "asian", "wok", "mongolian", "halal", "kosher", "pizza", "pasta", "carving");
-
-    /** Hot entrées first; topping bars (mostly tiny-calorie add-ons) and bagels last. */
-    private static List<DiningService.Station> mainStationsFirst(List<DiningService.Station> input) {
-        return input.stream().sorted(Comparator.comparingInt(EatPage::stationRank)).toList();
-    }
-
-    private static int stationRank(DiningService.Station station) {
-        String name = station.name().toLowerCase(Locale.ROOT);
-        double[] calories = station.items().stream().filter(item -> item.calories() != null)
-                .mapToDouble(DiningService.Item::calories).sorted().toArray();
-        double median = calories.length == 0 ? 100 : calories[calories.length / 2];
-        if (median < 40) {
-            return 3;
-        }
-        if (name.contains("deli") || name.contains("salad")) {
-            return 1;
-        }
-        for (int i = 0; i < MAIN_STATIONS.size(); i++) {
-            if (name.contains(MAIN_STATIONS.get(i))) {
-                return 0;
-            }
-        }
-        return name.contains("bagel") || name.contains("bread") || name.contains("fruit") ? 2 : 1;
     }
 
     private VBox stationCard(String name, List<DiningService.Item> items, boolean expanded) {
@@ -509,6 +534,9 @@ public final class EatPage extends BorderPane {
 
         restaurantStatus.getStyleClass().add("status-text");
         restaurantStatus.setWrapText(true);
+        openNow.getStyleClass().addAll("tag-choice", "small-chip");
+        openNow.setOnAction(event -> renderRestaurants());
+        areas.getChildren().add(0, openNow);
         restaurantContent.getChildren().addAll(restaurantSearch, pickers, areas,
                 restaurantStatus, restaurantList);
         renderRestaurants();
@@ -526,6 +554,7 @@ public final class EatPage extends BorderPane {
                 .filter(r -> "All areas".equals(area) || area.equals(r.areaGroup()))
                 .filter(r -> cuisine == null || "All cuisines".equals(cuisine) || cuisine.equals(r.cuisineGroup()))
                 .filter(r -> r.matches(query))
+                .filter(r -> !openNow.isSelected() || r.statusNow().open())
                 .sorted(Comparator.comparingDouble(r -> r.hasLocation()
                         ? campus.milesTo(r.lat(), r.lng()) : Double.MAX_VALUE))
                 .toList();
@@ -568,12 +597,11 @@ public final class EatPage extends BorderPane {
             dishLabel.getStyleClass().add("dish-tags");
             dishLabel.setWrapText(true);
             card.getChildren().add(dishLabel);
-        } else if (restaurant.hours() != null) {
-            Label hours = new Label(restaurant.hours());
-            hours.getStyleClass().add("dish-tags");
-            hours.setWrapText(true);
-            card.getChildren().add(hours);
         }
+        OpenHours.Status status = restaurant.statusNow();
+        Label open = new Label(status.text());
+        open.getStyleClass().addAll("dish-tags", "open-" + status.state().name().toLowerCase(Locale.ROOT));
+        card.getChildren().add(open);
         card.getStyleClass().addAll("content-card", "restaurant-card");
         if (restaurant == selectedRestaurant && wide) {
             card.getStyleClass().add("selected-card");

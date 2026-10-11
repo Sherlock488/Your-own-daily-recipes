@@ -246,6 +246,7 @@ public class Main extends Application {
         eatPage = new EatPage(
                 primaryStage,
                 desktop(),
+                accountId,
                 (date, period, planId) -> {
                     boolean saved = mealPlanStore.add(date, period, planId);
                     homePage.refresh();
@@ -259,6 +260,10 @@ public class Main extends Application {
                 windowMode,
                 this::switchWindowMode
         );
+        homePage.setOnOpenHall(slug -> {
+            navigateTo("Eat");
+            eatPage.showHall(slug);
+        });
         framedHome = framed(homePage);
         framedKitchen = framed(kitchenPage);
         framedProfile = framed(profilePage);

@@ -22,6 +22,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -240,6 +241,70 @@ public final class DiningService {
         return result;
     }
 
+    private static final List<String> MAIN_STATIONS = List.of("entree", "grill", "rotisserie", "pub",
+            "asian", "wok", "mongolian", "halal", "kosher", "pizza", "pasta", "carving");
+
+    /** Hot entrées first; topping bars (mostly tiny-calorie add-ons) and bagels last. */
+    static List<Station> mainStationsFirst(List<Station> input) {
+        return input.stream().sorted(Comparator.comparingInt(DiningService::stationRank)).toList();
+    }
+
+    private static int stationRank(Station station) {
+        String name = station.name().toLowerCase(Locale.ROOT);
+        double[] calories = station.items().stream().filter(item -> item.calories() != null)
+                .mapToDouble(Item::calories).sorted().toArray();
+        double median = calories.length == 0 ? 100 : calories[calories.length / 2];
+        if (median < 40) {
+            return 3;
+        }
+        if (name.contains("deli") || name.contains("salad")) {
+            return 1;
+        }
+        for (int i = 0; i < MAIN_STATIONS.size(); i++) {
+            if (name.contains(MAIN_STATIONS.get(i))) {
+                return 0;
+            }
+        }
+        return name.contains("bagel") || name.contains("bread") || name.contains("fruit") ? 2 : 1;
+    }
+
+    /** A few headline dishes for a meal: from the main hot stations, skipping sides and toppings. */
+    static List<String> highlights(List<Station> stations, int limit) {
+        List<String> names = new ArrayList<>();
+        for (Station station : mainStationsFirst(stations)) {
+            if (stationRank(station) > 0) {
+                break;
+            }
+            for (Item item : station.items()) {
+                if (item.calories() != null && item.calories() >= 150 && !names.contains(item.name())) {
+                    names.add(item.name());
+                }
+                if (names.size() >= limit) {
+                    return names;
+                }
+            }
+        }
+        return names;
+    }
+
+    /** The meal being served around now, by typical Rutgers dining hours. */
+    static String currentMealSlug(Hall hall, java.time.ZonedDateTime now) {
+        boolean weekend = now.getDayOfWeek() == DayOfWeek.SATURDAY || now.getDayOfWeek() == DayOfWeek.SUNDAY;
+        LocalTime time = now.toLocalTime();
+        String preferred;
+        if (time.isBefore(LocalTime.of(10, 30)) && !weekend) {
+            preferred = "breakfast";
+        } else if (time.isBefore(LocalTime.of(16, 0))) {
+            preferred = "lunch";
+        } else if (time.isBefore(LocalTime.of(21, 0))) {
+            preferred = "dinner";
+        } else {
+            preferred = "knight";
+        }
+        return hall.meals().stream().map(Meal::slug).filter(slug -> slug.contains(preferred)).findFirst()
+                .orElse(hall.meals().isEmpty() ? null : hall.meals().get(0).slug());
+    }
+
     private static List<Hall> parseHalls(JsonObject snapshot) {
         List<Hall> result = new ArrayList<>();
         if (snapshot == null || !snapshot.has("halls")) {
@@ -249,10 +314,12 @@ public final class DiningService {
         for (JsonElement element : snapshot.getAsJsonArray("halls")) {
             JsonObject hall = element.getAsJsonObject();
             Map<DayOfWeek, String> hours = new EnumMap<>(DayOfWeek.class);
+            Map<DayOfWeek, int[]> ranges = new EnumMap<>(DayOfWeek.class);
             JsonObject hoursObject = obj(hall, "hours");
             for (int i = 0; i < days.length; i++) {
                 String range = hoursObject == null ? null : str(hoursObject, days[i]);
                 hours.put(DayOfWeek.of(i + 1), range == null ? "Closed" : formatRange(range));
+                ranges.put(DayOfWeek.of(i + 1), range == null ? null : minuteRange(range));
             }
             List<Meal> meals = new ArrayList<>();
             for (JsonElement meal : hall.getAsJsonArray("meals")) {
@@ -261,7 +328,8 @@ public final class DiningService {
             }
             String slug = str(hall, "slug");
             result.add(new Hall(slug, str(hall, "name"), campusFor(slug), str(hall, "address"),
-                    str(hall, "phone"), num(hall, "lat"), num(hall, "lng"), hours, List.copyOf(meals)));
+                    str(hall, "phone"), num(hall, "lat"), num(hall, "lng"), hours,
+                    OpenHours.ofDaily(ranges), List.copyOf(meals)));
         }
         return List.copyOf(result);
     }
@@ -296,6 +364,18 @@ public final class DiningService {
         return name;
     }
 
+    private static int[] minuteRange(String range) {
+        try {
+            LocalTime start = LocalTime.parse(range.split("-")[0]);
+            LocalTime end = LocalTime.parse(range.split("-")[1]);
+            int s = start.getHour() * 60 + start.getMinute();
+            int e = end.getHour() * 60 + end.getMinute();
+            return new int[]{s, e <= s ? e + 1440 : e};
+        } catch (RuntimeException error) {
+            return null;
+        }
+    }
+
     private static String formatRange(String range) {
         String[] parts = range.split("-");
         DateTimeFormatter format = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
@@ -317,7 +397,7 @@ public final class DiningService {
             out.append(startOfWord ? Character.toUpperCase(c) : c);
             startOfWord = !Character.isLetterOrDigit(c) && c != '\'';
         }
-        String result = out.toString();
+        String result = out.toString().strip().replaceAll("\\s+", " ");
         for (String small : List.of("And", "Or", "Of", "With", "In", "On")) {
             result = result.replace(" " + small + " ", " " + small.toLowerCase(Locale.ROOT) + " ");
         }
@@ -398,7 +478,8 @@ public final class DiningService {
     }
 
     public record Hall(String slug, String name, String campus, String address, String phone,
-                       Double lat, Double lng, Map<DayOfWeek, String> hours, List<Meal> meals) {
+                       Double lat, Double lng, Map<DayOfWeek, String> hours, OpenHours openHours,
+                       List<Meal> meals) {
         public String shortName() {
             return name.replace(" Dining Hall", "").replace(" Dining Commons", "").replace("The ", "");
         }

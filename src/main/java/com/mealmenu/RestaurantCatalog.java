@@ -70,7 +70,8 @@ public final class RestaurantCatalog {
                         orElse(str(o, "cuisineGroup"), str(o, "cuisine")), str(o, "area"),
                         orElse(str(o, "areaGroup"), str(o, "area")), str(o, "address"), num(o, "lat"), num(o, "lng"),
                         str(o, "phone"), str(o, "website"), str(o, "orderUrl"),
-                        str(o, "priceLevel"), str(o, "hours"), List.copyOf(tags),
+                        str(o, "priceLevel"), str(o, "hours"), OpenHours.fromJson(o.get("openHours")),
+                        List.copyOf(tags),
                         str(o, "menuSource"), str(o, "verifiedOn"), List.copyOf(menu)));
             }
         } catch (IOException | RuntimeException error) {
@@ -90,8 +91,12 @@ public final class RestaurantCatalog {
     public record Restaurant(String id, String name, String cuisine, String cuisineGroup,
                              String area, String areaGroup, String address,
                              Double lat, Double lng, String phone, String website, String orderUrl,
-                             String priceLevel, String hours, List<String> tags,
+                             String priceLevel, String hours, OpenHours openHours, List<String> tags,
                              String menuSource, String verifiedOn, List<MenuSection> menu) {
+
+        public OpenHours.Status statusNow() {
+            return openHours.status(java.time.ZonedDateTime.now(Campus.ZONE));
+        }
 
         public boolean hasLocation() {
             return lat != null && lng != null;

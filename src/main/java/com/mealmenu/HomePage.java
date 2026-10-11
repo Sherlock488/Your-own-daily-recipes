@@ -41,6 +41,9 @@ public final class HomePage extends ScrollPane {
     private final Label menuStatus = new Label();
     private final Timeline liveClock;
     private LocalDate cachedDate;
+    private final VBox eatNowList = new VBox(8);
+    private Consumer<String> onOpenHall = slug -> { };
+    private long eatNowRefreshedAt;
 
     public HomePage(
             Stage owner,
@@ -56,6 +59,7 @@ public final class HomePage extends ScrollPane {
         this.accountService = accountService;
         this.onSchedulePlan = onSchedulePlan;
         this.onQuickStart = onQuickStart;
+        eatNowList.getChildren().add(new Label("Checking the dining halls…"));
 
         getStyleClass().add("page-scroll");
         setFitToWidth(true);
@@ -100,7 +104,8 @@ public final class HomePage extends ScrollPane {
         menuStatus.getStyleClass().add("status-text");
         menuStatus.setWrapText(true);
         VBox menuCard = card("Upcoming Confirmed Menu", menuList, menuStatus);
-        content.getChildren().addAll(greetingCard, reminderCard, actionSection, menuCard);
+        VBox eatNowCard = card("Eat Now · Dining Halls", eatNowList);
+        content.getChildren().addAll(greetingCard, eatNowCard, reminderCard, actionSection, menuCard);
         setContent(content);
 
         liveClock = new Timeline(new KeyFrame(Duration.seconds(1), event -> updateGreeting()));
@@ -109,11 +114,53 @@ public final class HomePage extends ScrollPane {
         refresh();
     }
 
+    /** Where a tap on a dining hall in "Eat Now" goes (the Eat tab). */
+    public void setOnOpenHall(Consumer<String> handler) {
+        onOpenHall = handler;
+        refreshEatNow();
+    }
+
     public void refresh() {
+        if (System.currentTimeMillis() - eatNowRefreshedAt > 5 * 60_000) {
+            refreshEatNow();
+        }
         cachedDate = LocalDate.now();
         updateGreeting();
         refreshTodayPlans();
         refreshMenu();
+    }
+
+    /** Which halls are open right now and a few dishes from the current meal. */
+    private void refreshEatNow() {
+        eatNowRefreshedAt = System.currentTimeMillis();
+        java.time.ZonedDateTime now = java.time.ZonedDateTime.now(Campus.ZONE);
+        DiningService dining = DiningService.get();
+        List<DiningService.Hall> halls = new java.util.ArrayList<>(dining.halls());
+        halls.sort(java.util.Comparator.comparing(hall -> !hall.openHours().status(now).open()));
+        eatNowList.getChildren().clear();
+        for (DiningService.Hall hall : halls) {
+            OpenHours.Status status = hall.openHours().status(now);
+            Label name = new Label(hall.shortName() + "  ·  " + status.text());
+            name.getStyleClass().addAll("recipe-title", "open-" + status.state().name().toLowerCase(Locale.ROOT));
+            Label dishes = new Label(status.open() ? "Loading menu…" : hall.campus());
+            dishes.getStyleClass().add("dish-tags");
+            dishes.setWrapText(true);
+            VBox row = new VBox(2, name, dishes);
+            row.getStyleClass().add("dish-row");
+            row.setOnMouseClicked(event -> onOpenHall.accept(hall.slug()));
+            eatNowList.getChildren().add(row);
+            String meal = DiningService.currentMealSlug(hall, now);
+            if (status.open() && meal != null) {
+                dining.menu(hall.slug(), meal, now.toLocalDate()).thenAccept(result ->
+                        javafx.application.Platform.runLater(() -> {
+                            List<String> top = DiningService.highlights(result.stations(), 3);
+                            String mealName = hall.meals().stream().filter(m -> m.slug().equals(meal))
+                                    .map(DiningService.Meal::name).findFirst().orElse("");
+                            dishes.setText(top.isEmpty() ? mealName + ": no menu posted"
+                                    : mealName + ": " + String.join(", ", top));
+                        }));
+            }
+        }
     }
 
     public void stopClock() {

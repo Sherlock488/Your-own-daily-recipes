@@ -17,6 +17,12 @@ The **Eat** tab helps Rutgers–New Brunswick students decide where to eat:
   Each restaurant page shows hours, phone, the menu with prices, and **Navigate** (Google Maps
   directions), **Website** and **Order** buttons. Every menu lists its source URL and the date it
   was checked.
+- **Eat Now** on Home: which dining halls are open right now, until when, and headline dishes of
+  the current meal; tap one to jump to its menu.
+- **Open now** filter and live open/closed status for restaurants (parsed from their posted hours;
+  days a source doesn't list show as "hours unknown", never as closed).
+- Diet filters include **No Seafood** (fish + shellfish) and are remembered per account. Dishes
+  without allergen data are excluded from allergen filters and labeled "No allergen info".
 - Tap any dish to add it to your meal plan; it shows up on Home next to your home-cooked recipes.
 
 | Dining halls | Search restaurants by dish | Restaurant menu + navigation |
@@ -84,6 +90,16 @@ If PowerShell reports that `mvn` is not recognized, Maven is not on the system `
 ```powershell
 & "D:\homework\Tools\apache-maven-3.10.0\bin\mvn.cmd" -f "D:\homework\DailyMenu\pom.xml" javafx:run
 ```
+
+## Windows Installer (.msi)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\package-windows.ps1 -WixDir C:\path	o\wix314
+```
+
+Needs JDK 17+, Maven and [WiX Toolset 3.x](https://github.com/wixtoolset/wix3/releases) (the
+`wix314-binaries.zip` works without installing). Produces `target\installer\Daily Menu-<version>.msi`:
+a per-user install (no admin rights) with Start-menu and desktop shortcuts and its own Java runtime.
 
 ## Build a Windows App Package
 

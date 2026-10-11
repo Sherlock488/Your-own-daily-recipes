@@ -8,6 +8,8 @@ import json
 import pathlib
 import sys
 
+from hours import parse_hours
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SRC = ROOT / "data/restaurants"
 OUT = ROOT / "src/main/resources/com/mealmenu/data/restaurants.json"
@@ -59,6 +61,7 @@ def main():
                 continue
             r["cuisineGroup"] = cuisine_group(r["cuisine"])
             r["areaGroup"] = AREA_GROUPS.get(r["area"], "Edison & nearby")
+            r["openHours"] = parse_hours(r.get("hours"))
             r["menu"] = [s for s in (r.get("menu") or []) if s.get("items")]
             seen.add(r["id"])
             merged.append(r)

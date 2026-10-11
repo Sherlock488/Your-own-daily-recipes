@@ -119,7 +119,10 @@ final class EatDialogs {
         body.getChildren().add(badges);
         body.getChildren().add(infoLine("📍 " + restaurant.address()));
         if (restaurant.hours() != null) {
-            body.getChildren().add(infoLine("🕒 " + restaurant.hours()));
+            OpenHours.Status status = restaurant.statusNow();
+            Label open = infoLine(status.text());
+            open.getStyleClass().add("open-" + status.state().name().toLowerCase(Locale.ROOT));
+            body.getChildren().addAll(open, infoLine("🕒 " + restaurant.hours()));
         }
         if (restaurant.phone() != null) {
             body.getChildren().add(infoLine("☎ " + restaurant.phone()));

@@ -226,7 +226,41 @@
    }
   ],
   "cuisineGroup": "Pizza",
-  "areaGroup": "Busch & Livingston"
+  "areaGroup": "Busch & Livingston",
+  "openHours": {
+   "mon": [
+    [
+     540,
+     1290
+    ]
+   ],
+   "tue": [
+    [
+     540,
+     1290
+    ]
+   ],
+   "wed": [
+    [
+     540,
+     1290
+    ]
+   ],
+   "thu": [
+    [
+     540,
+     1290
+    ]
+   ],
+   "fri": [
+    [
+     540,
+     1170
+    ]
+   ],
+   "sat": null,
+   "sun": null
+  }
  },
  {
   "id": "hoja-asian-fusion-livingston",
@@ -496,7 +530,51 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Busch & Livingston"
+  "areaGroup": "Busch & Livingston",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "henrys-diner-livingston",
@@ -726,7 +804,41 @@
    }
   ],
   "cuisineGroup": "American",
-  "areaGroup": "Busch & Livingston"
+  "areaGroup": "Busch & Livingston",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1080
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1080
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1080
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1080
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1080
+    ]
+   ],
+   "sat": null,
+   "sun": null
+  }
  },
  {
   "id": "house-of-biryanis-kebabs-piscataway",
@@ -845,7 +957,51 @@
    }
   ],
   "cuisineGroup": "Indian",
-  "areaGroup": "Busch & Livingston"
+  "areaGroup": "Busch & Livingston",
+  "openHours": {
+   "mon": [
+    [
+     690,
+     1395
+    ]
+   ],
+   "tue": [
+    [
+     690,
+     1395
+    ]
+   ],
+   "wed": [
+    [
+     690,
+     1395
+    ]
+   ],
+   "thu": [
+    [
+     690,
+     1395
+    ]
+   ],
+   "fri": [
+    [
+     690,
+     1395
+    ]
+   ],
+   "sat": [
+    [
+     690,
+     1395
+    ]
+   ],
+   "sun": [
+    [
+     690,
+     1395
+    ]
+   ]
+  }
  },
  {
   "id": "kilmers-market-livingston",
@@ -996,7 +1152,41 @@
    }
   ],
   "cuisineGroup": "American",
-  "areaGroup": "Busch & Livingston"
+  "areaGroup": "Busch & Livingston",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sat": null,
+   "sun": null
+  }
  },
  {
   "id": "persis-biryani-indian-grill-piscataway",
@@ -1219,7 +1409,8 @@
    }
   ],
   "cuisineGroup": "Indian",
-  "areaGroup": "Busch & Livingston"
+  "areaGroup": "Busch & Livingston",
+  "openHours": null
  },
  {
   "id": "stelton-pizza-piscataway",
@@ -1377,7 +1568,51 @@
    }
   ],
   "cuisineGroup": "Pizza",
-  "areaGroup": "Busch & Livingston"
+  "areaGroup": "Busch & Livingston",
+  "openHours": {
+   "mon": [
+    [
+     630,
+     1200
+    ]
+   ],
+   "tue": [
+    [
+     630,
+     1200
+    ]
+   ],
+   "wed": [
+    [
+     630,
+     1200
+    ]
+   ],
+   "thu": [
+    [
+     630,
+     1200
+    ]
+   ],
+   "fri": [
+    [
+     630,
+     1260
+    ]
+   ],
+   "sat": [
+    [
+     630,
+     1200
+    ]
+   ],
+   "sun": [
+    [
+     690,
+     1200
+    ]
+   ]
+  }
  },
  {
   "id": "tequila-n-tacos-piscataway",
@@ -1565,7 +1800,8 @@
    }
   ],
   "cuisineGroup": "Mexican",
-  "areaGroup": "Busch & Livingston"
+  "areaGroup": "Busch & Livingston",
+  "openHours": null
  },
  {
   "id": "dunhuang-edison",
@@ -1765,7 +2001,51 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1290
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1290
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1290
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1290
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1290
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1290
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1290
+    ]
+   ]
+  }
  },
  {
   "id": "golden-seafood-restaurant-edison",
@@ -1788,7 +2068,51 @@
   "verifiedOn": "2026-10-11",
   "menu": [],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "sat": [
+    [
+     600,
+     1320
+    ]
+   ],
+   "sun": [
+    [
+     600,
+     1320
+    ]
+   ]
+  }
  },
  {
   "id": "happy-lamb-hot-pot-edison",
@@ -1878,7 +2202,51 @@
    }
   ],
   "cuisineGroup": "Hot Pot",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     720,
+     1290
+    ]
+   ],
+   "tue": [
+    [
+     720,
+     1290
+    ]
+   ],
+   "wed": [
+    [
+     720,
+     1290
+    ]
+   ],
+   "thu": [
+    [
+     720,
+     1290
+    ]
+   ],
+   "fri": [
+    [
+     720,
+     1290
+    ]
+   ],
+   "sat": [
+    [
+     720,
+     1290
+    ]
+   ],
+   "sun": [
+    [
+     720,
+     1290
+    ]
+   ]
+  }
  },
  {
   "id": "keum-ho-garden-edison",
@@ -2048,7 +2416,51 @@
    }
   ],
   "cuisineGroup": "Korean",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "tue": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "wed": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "thu": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "fri": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "sat": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "sun": [
+    [
+     690,
+     1320
+    ]
+   ]
+  }
  },
  {
   "id": "mala-town-edison",
@@ -2157,7 +2569,51 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     690,
+     1410
+    ]
+   ],
+   "tue": [
+    [
+     690,
+     1410
+    ]
+   ],
+   "wed": [
+    [
+     690,
+     1410
+    ]
+   ],
+   "thu": [
+    [
+     690,
+     1410
+    ]
+   ],
+   "fri": [
+    [
+     690,
+     1410
+    ]
+   ],
+   "sat": [
+    [
+     690,
+     1410
+    ]
+   ],
+   "sun": [
+    [
+     690,
+     1410
+    ]
+   ]
+  }
  },
  {
   "id": "menya-ramen-house-metuchen",
@@ -2311,7 +2767,46 @@
    }
   ],
   "cuisineGroup": "Japanese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [],
+   "tue": [
+    [
+     720,
+     1230
+    ]
+   ],
+   "wed": [
+    [
+     720,
+     1230
+    ]
+   ],
+   "thu": [
+    [
+     720,
+     1230
+    ]
+   ],
+   "fri": [
+    [
+     720,
+     1230
+    ]
+   ],
+   "sat": [
+    [
+     720,
+     1230
+    ]
+   ],
+   "sun": [
+    [
+     720,
+     1230
+    ]
+   ]
+  }
  },
  {
   "id": "nan-xiang-soup-dumplings-south-plainfield",
@@ -2500,7 +2995,51 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1380
+    ]
+   ]
+  }
  },
  {
   "id": "newda-noodles-edison",
@@ -2700,7 +3239,46 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "wed": [],
+   "thu": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "red-onion-edison",
@@ -2758,7 +3336,46 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [],
+   "tue": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sat": [
+    [
+     720,
+     1260
+    ]
+   ],
+   "sun": [
+    [
+     720,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "s-and-y-mini-hot-pot-edison",
@@ -2948,7 +3565,51 @@
    }
   ],
   "cuisineGroup": "Hot Pot",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "tue": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "wed": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "thu": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "fri": [
+    [
+     690,
+     1350
+    ]
+   ],
+   "sat": [
+    [
+     690,
+     1350
+    ]
+   ],
+   "sun": [
+    [
+     690,
+     1320
+    ]
+   ]
+  }
  },
  {
   "id": "so-kong-dong-tofu-house-edison",
@@ -3082,7 +3743,51 @@
    }
   ],
   "cuisineGroup": "Korean",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1320
+    ]
+   ]
+  }
  },
  {
   "id": "spice-24-edison",
@@ -3242,7 +3947,51 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1350
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1350
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1350
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1350
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1410
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1410
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "sunmerry-bakery-edison",
@@ -3417,7 +4166,51 @@
    }
   ],
   "cuisineGroup": "Bakery & Cafe",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     480,
+     1260
+    ]
+   ],
+   "tue": [
+    [
+     480,
+     1260
+    ]
+   ],
+   "wed": [
+    [
+     480,
+     1260
+    ]
+   ],
+   "thu": [
+    [
+     480,
+     1260
+    ]
+   ],
+   "fri": [
+    [
+     480,
+     1320
+    ]
+   ],
+   "sat": [
+    [
+     480,
+     1320
+    ]
+   ],
+   "sun": [
+    [
+     480,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "tasty-moment-edison",
@@ -3517,7 +4310,70 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": {
+   "mon": [
+    [
+     690,
+     960
+    ],
+    [
+     1020,
+     1290
+    ]
+   ],
+   "tue": [],
+   "wed": [
+    [
+     690,
+     960
+    ],
+    [
+     1020,
+     1290
+    ]
+   ],
+   "thu": [
+    [
+     690,
+     960
+    ],
+    [
+     1020,
+     1290
+    ]
+   ],
+   "fri": [
+    [
+     690,
+     960
+    ],
+    [
+     1020,
+     1290
+    ]
+   ],
+   "sat": [
+    [
+     690,
+     960
+    ],
+    [
+     1020,
+     1290
+    ]
+   ],
+   "sun": [
+    [
+     690,
+     960
+    ],
+    [
+     1020,
+     1290
+    ]
+   ]
+  }
  },
  {
   "id": "wus-shanghai-dumpling-edison",
@@ -3762,7 +4618,8 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Edison & nearby"
+  "areaGroup": "Edison & nearby",
+  "openHours": null
  },
  {
   "id": "chef-tan-highland-park",
@@ -3977,7 +4834,51 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Highland Park"
+  "areaGroup": "Highland Park",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "hunan-manor-highland-park",
@@ -4176,7 +5077,46 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "Highland Park"
+  "areaGroup": "Highland Park",
+  "openHours": {
+   "mon": [
+    [
+     690,
+     1275
+    ]
+   ],
+   "tue": [
+    [
+     690,
+     1275
+    ]
+   ],
+   "wed": [],
+   "thu": [
+    [
+     690,
+     1275
+    ]
+   ],
+   "fri": [
+    [
+     690,
+     1290
+    ]
+   ],
+   "sat": [
+    [
+     690,
+     1290
+    ]
+   ],
+   "sun": [
+    [
+     690,
+     1290
+    ]
+   ]
+  }
  },
  {
   "id": "midori-sushi-highland-park",
@@ -4396,7 +5336,8 @@
    }
   ],
   "cuisineGroup": "Japanese",
-  "areaGroup": "Highland Park"
+  "areaGroup": "Highland Park",
+  "openHours": null
  },
  {
   "id": "smash-and-spice-highland-park",
@@ -4592,7 +5533,51 @@
    }
   ],
   "cuisineGroup": "Halal & Mediterranean",
-  "areaGroup": "Highland Park"
+  "areaGroup": "Highland Park",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "sun": [
+    [
+     720,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "destination-dogs",
@@ -4776,7 +5761,51 @@
    }
   ],
   "cuisineGroup": "American",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     690,
+     1440
+    ]
+   ],
+   "tue": [
+    [
+     690,
+     1440
+    ]
+   ],
+   "wed": [
+    [
+     690,
+     1440
+    ]
+   ],
+   "thu": [
+    [
+     690,
+     1560
+    ]
+   ],
+   "fri": [
+    [
+     690,
+     1560
+    ]
+   ],
+   "sat": [
+    [
+     720,
+     1560
+    ]
+   ],
+   "sun": [
+    [
+     720,
+     1440
+    ]
+   ]
+  }
  },
  {
   "id": "edo-japanese",
@@ -4989,7 +6018,51 @@
    }
   ],
   "cuisineGroup": "Japanese",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "efes-mediterranean-grill",
@@ -5203,7 +6276,51 @@
    }
   ],
   "cuisineGroup": "Halal & Mediterranean",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1380
+    ]
+   ]
+  }
  },
  {
   "id": "halal-munchies",
@@ -5407,7 +6524,51 @@
    }
   ],
   "cuisineGroup": "Halal & Mediterranean",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1605
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1605
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1605
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1605
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1605
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1605
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1605
+    ]
+   ]
+  }
  },
  {
   "id": "krispy-pizza",
@@ -5633,7 +6794,46 @@
    }
   ],
   "cuisineGroup": "Pizza",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1245
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1245
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1245
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1245
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1245
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1245
+    ]
+   ],
+   "sun": null
+  }
  },
  {
   "id": "mamouns-falafel",
@@ -5808,7 +7008,51 @@
    }
   ],
   "cuisineGroup": "Halal & Mediterranean",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1380
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1380
+    ]
+   ]
+  }
  },
  {
   "id": "nirvanis-indian-kitchen",
@@ -6037,7 +7281,51 @@
    }
   ],
   "cuisineGroup": "Indian",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1665
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1665
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1665
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1665
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1665
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1665
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1665
+    ]
+   ]
+  }
  },
  {
   "id": "noodle-gourmet",
@@ -6252,7 +7540,46 @@
    }
   ],
   "cuisineGroup": "Chinese",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [],
+   "tue": [
+    [
+     690,
+     1440
+    ]
+   ],
+   "wed": [
+    [
+     690,
+     1440
+    ]
+   ],
+   "thu": [
+    [
+     690,
+     1440
+    ]
+   ],
+   "fri": [
+    [
+     690,
+     1440
+    ]
+   ],
+   "sat": [
+    [
+     690,
+     1440
+    ]
+   ],
+   "sun": [
+    [
+     690,
+     1305
+    ]
+   ]
+  }
  },
  {
   "id": "ru-hungry",
@@ -6477,7 +7804,51 @@
    }
   ],
   "cuisineGroup": "American",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     480,
+     1665
+    ]
+   ],
+   "tue": [
+    [
+     480,
+     1665
+    ]
+   ],
+   "wed": [
+    [
+     480,
+     1665
+    ]
+   ],
+   "thu": [
+    [
+     480,
+     1665
+    ]
+   ],
+   "fri": [
+    [
+     480,
+     1665
+    ]
+   ],
+   "sat": [
+    [
+     480,
+     1665
+    ]
+   ],
+   "sun": [
+    [
+     480,
+     1665
+    ]
+   ]
+  }
  },
  {
   "id": "ramen-nagomi-easton",
@@ -6675,7 +8046,79 @@
    }
   ],
   "cuisineGroup": "Japanese",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     720,
+     930
+    ],
+    [
+     1020,
+     1260
+    ]
+   ],
+   "tue": [
+    [
+     720,
+     930
+    ],
+    [
+     1020,
+     1260
+    ]
+   ],
+   "wed": [
+    [
+     720,
+     930
+    ],
+    [
+     1020,
+     1260
+    ]
+   ],
+   "thu": [
+    [
+     720,
+     930
+    ],
+    [
+     1020,
+     1260
+    ]
+   ],
+   "fri": [
+    [
+     720,
+     930
+    ],
+    [
+     1020,
+     1320
+    ]
+   ],
+   "sat": [
+    [
+     720,
+     930
+    ],
+    [
+     1020,
+     1320
+    ]
+   ],
+   "sun": [
+    [
+     720,
+     930
+    ],
+    [
+     1020,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "stuff-yer-face",
@@ -6731,7 +8174,51 @@
    }
   ],
   "cuisineGroup": "American",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1300
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1300
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1300
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1300
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1300
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1300
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1300
+    ]
+   ]
+  }
  },
  {
   "id": "tacoria",
@@ -6960,7 +8447,51 @@
    }
   ],
   "cuisineGroup": "Mexican",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1260
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1320
+    ]
+   ],
+   "sat": [
+    [
+     690,
+     1320
+    ]
+   ],
+   "sun": [
+    [
+     690,
+     1260
+    ]
+   ]
+  }
  },
  {
   "id": "teri-teri",
@@ -7153,7 +8684,51 @@
    }
   ],
   "cuisineGroup": "Japanese",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     480,
+     1199
+    ]
+   ],
+   "tue": [
+    [
+     480,
+     1199
+    ]
+   ],
+   "wed": [
+    [
+     480,
+     1199
+    ]
+   ],
+   "thu": [
+    [
+     480,
+     1199
+    ]
+   ],
+   "fri": [
+    [
+     480,
+     1199
+    ]
+   ],
+   "sat": [
+    [
+     480,
+     900
+    ]
+   ],
+   "sun": [
+    [
+     480,
+     900
+    ]
+   ]
+  }
  },
  {
   "id": "yumsem-eats",
@@ -7363,6 +8938,50 @@
    }
   ],
   "cuisineGroup": "Korean",
-  "areaGroup": "New Brunswick"
+  "areaGroup": "New Brunswick",
+  "openHours": {
+   "mon": [
+    [
+     660,
+     1350
+    ]
+   ],
+   "tue": [
+    [
+     660,
+     1350
+    ]
+   ],
+   "wed": [
+    [
+     660,
+     1350
+    ]
+   ],
+   "thu": [
+    [
+     660,
+     1470
+    ]
+   ],
+   "fri": [
+    [
+     660,
+     1470
+    ]
+   ],
+   "sat": [
+    [
+     660,
+     1470
+    ]
+   ],
+   "sun": [
+    [
+     660,
+     1350
+    ]
+   ]
+  }
  }
 ]

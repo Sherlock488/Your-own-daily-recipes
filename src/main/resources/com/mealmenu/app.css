@@ -613,3 +613,11 @@
     -fx-font-weight: bold;
     -fx-text-fill: #355B40;
 }
+
+.open-open {
+    -fx-text-fill: #3E8A55;
+}
+
+.open-closed {
+    -fx-text-fill: #A0705E;
+}
