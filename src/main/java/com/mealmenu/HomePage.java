@@ -1,0 +1,278 @@
+package com.mealmenu;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Consumer;
+
+public final class HomePage extends ScrollPane {
+
+    private final Stage owner;
+    private final MealPlanStore planStore;
+    private final AppUsageTracker usageTracker;
+    private final LocalAccountService accountService;
+    private final Consumer<LocalDate> onSchedulePlan;
+    private final Consumer<AppDialogs.QuickStartSelection> onQuickStart;
+    private final Label greeting = new Label();
+    private final Label todayDate = new Label();
+    private final Label clock = new Label();
+    private final Label daysUsing = new Label();
+    private final Label reminder = new Label();
+    private final VBox todayPlanList = new VBox(8);
+    private final VBox menuList = new VBox(9);
+    private final Label menuStatus = new Label();
+    private final Timeline liveClock;
+    private LocalDate cachedDate;
+
+    public HomePage(
+            Stage owner,
+            MealPlanStore planStore,
+            AppUsageTracker usageTracker,
+            LocalAccountService accountService,
+            Consumer<LocalDate> onSchedulePlan,
+            Consumer<AppDialogs.QuickStartSelection> onQuickStart
+    ) {
+        this.owner = owner;
+        this.planStore = planStore;
+        this.usageTracker = usageTracker;
+        this.accountService = accountService;
+        this.onSchedulePlan = onSchedulePlan;
+        this.onQuickStart = onQuickStart;
+
+        getStyleClass().add("page-scroll");
+        setFitToWidth(true);
+        setPannable(true);
+        setHbarPolicy(ScrollBarPolicy.NEVER);
+        setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+
+        VBox content = new VBox(15);
+        content.getStyleClass().add("page-content");
+        content.setPadding(new Insets(18, 17, 20, 17));
+
+        VBox greetingCard = new VBox(7, greeting, todayDate, clock, daysUsing);
+        greetingCard.getStyleClass().add("greeting-card");
+        greeting.getStyleClass().add("greeting-title");
+        todayDate.getStyleClass().add("greeting-date");
+        clock.getStyleClass().add("greeting-clock");
+        daysUsing.getStyleClass().add("greeting-days");
+
+        VBox reminderCard = card("Today's Plan", reminder, todayPlanList);
+        reminder.getStyleClass().add("muted-text");
+
+        Button scheduleButton = new Button("Schedule");
+        scheduleButton.getStyleClass().add("secondary-button");
+        scheduleButton.setMaxWidth(Double.MAX_VALUE);
+        scheduleButton.setMinHeight(48);
+        scheduleButton.setOnAction(event -> openSchedule());
+
+        Button quickStartButton = new Button("Quick Start");
+        quickStartButton.getStyleClass().add("primary-button");
+        quickStartButton.setMaxWidth(Double.MAX_VALUE);
+        quickStartButton.setMinHeight(48);
+        quickStartButton.setOnAction(event -> AppDialogs.showQuickStart(owner)
+                .ifPresent(onQuickStart));
+        HBox actions = new HBox(10, scheduleButton, quickStartButton);
+        actions.setAlignment(Pos.CENTER);
+        HBox.setHgrow(scheduleButton, Priority.ALWAYS);
+        HBox.setHgrow(quickStartButton, Priority.ALWAYS);
+        VBox actionSection = new VBox(7,
+                new Label("Make a plan"), actions);
+        actionSection.getStyleClass().add("home-action-section");
+
+        menuStatus.getStyleClass().add("status-text");
+        menuStatus.setWrapText(true);
+        VBox menuCard = card("Upcoming Confirmed Menu", menuList, menuStatus);
+        content.getChildren().addAll(greetingCard, reminderCard, actionSection, menuCard);
+        setContent(content);
+
+        liveClock = new Timeline(new KeyFrame(Duration.seconds(1), event -> updateGreeting()));
+        liveClock.setCycleCount(Timeline.INDEFINITE);
+        liveClock.play();
+        refresh();
+    }
+
+    public void refresh() {
+        cachedDate = LocalDate.now();
+        updateGreeting();
+        refreshTodayPlans();
+        refreshMenu();
+    }
+
+    public void stopClock() {
+        liveClock.stop();
+    }
+
+    private void updateGreeting() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate currentDate = now.toLocalDate();
+        if (!currentDate.equals(cachedDate)) {
+            cachedDate = currentDate;
+            refreshTodayPlans();
+            refreshMenu();
+        }
+        int hour = now.getHour();
+        String hello;
+        if (hour >= 5 && hour < 12) {
+            hello = "Good morning";
+        } else if (hour >= 12 && hour < 17) {
+            hello = "Good afternoon";
+        } else if (hour >= 17 && hour < 22) {
+            hello = "Good evening";
+        } else {
+            hello = "Hello, night owl";
+        }
+        greeting.setText(hello + ", " + currentUsername() + "!");
+        todayDate.setText(now.format(DateTimeFormatter.ofPattern(
+                "EEEE, MMMM d, yyyy", Locale.ENGLISH)));
+        clock.setText(now.format(DateTimeFormatter.ofPattern("h:mm:ss a", Locale.ENGLISH)));
+        daysUsing.setText("Day " + usageTracker.daysUsing() + " with Daily Menu");
+    }
+
+    private String currentUsername() {
+        return accountService.username();
+    }
+
+    private void refreshTodayPlans() {
+        todayPlanList.getChildren().clear();
+        List<DailyPlan> plans = planStore.getPlans(LocalDate.now());
+        if (plans.isEmpty()) {
+            reminder.setText("Nothing is scheduled today yet. Add a meal when you are ready.");
+            Label empty = new Label("Your day is open.");
+            empty.getStyleClass().add("muted-text");
+            todayPlanList.getChildren().add(empty);
+            return;
+        }
+        reminder.setText(plans.size() == 1
+                ? "You have 1 meal planned for today."
+                : "You have " + plans.size() + " meals planned for today.");
+        for (DailyPlan plan : plans) {
+            Recipe recipe = RecipeCatalog.byId(plan.recipeId()).orElse(null);
+            if (recipe == null) {
+                continue;
+            }
+            Label item = new Label(plan.mealPeriod() + "  ·  " + recipe.name());
+            item.getStyleClass().add("reminder-item");
+            item.setWrapText(true);
+            todayPlanList.getChildren().add(item);
+        }
+    }
+
+    private void refreshMenu() {
+        menuList.getChildren().clear();
+        menuStatus.setText("");
+        List<DailyPlan> plans = planStore.getUpcomingPlans(LocalDate.now());
+        if (plans.isEmpty()) {
+            Label empty = new Label("Recipes you add from Kitchen will appear here.");
+            empty.getStyleClass().add("muted-text");
+            empty.setWrapText(true);
+            menuList.getChildren().add(empty);
+            return;
+        }
+        for (DailyPlan plan : plans) {
+            RecipeCatalog.byId(plan.recipeId())
+                    .ifPresent(recipe -> menuList.getChildren().add(createMenuRow(plan, recipe)));
+        }
+    }
+
+    private HBox createMenuRow(DailyPlan plan, Recipe recipe) {
+        String dateLabel = plan.date().equals(LocalDate.now())
+                ? plan.mealPeriod()
+                : plan.date().format(DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH))
+                + " · " + plan.mealPeriod();
+        Label period = new Label(dateLabel);
+        period.getStyleClass().add("time-badge");
+        Label name = new Label(recipe.name());
+        name.getStyleClass().add("recipe-title");
+        name.setWrapText(true);
+        Button more = new Button("⋯");
+        more.getStyleClass().add("more-button");
+        more.setAccessibleText("Meal options");
+        HBox row = new HBox(8, period, name, more);
+        row.getStyleClass().add("menu-row");
+        row.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(name, Priority.ALWAYS);
+        boolean[] longPressTriggered = {false};
+        row.setOnMouseClicked(event -> {
+            if (longPressTriggered[0]) {
+                longPressTriggered[0] = false;
+                event.consume();
+                return;
+            }
+            if (event.getButton() == MouseButton.PRIMARY) {
+                AppDialogs.showRecipeDetails(owner, recipe);
+            }
+        });
+        long[] pressedAt = {0};
+        row.setOnMousePressed(event -> pressedAt[0] = System.nanoTime());
+        row.setOnMouseReleased(event -> {
+            if (pressedAt[0] != 0 && System.nanoTime() - pressedAt[0] > 550_000_000L) {
+                longPressTriggered[0] = true;
+                showMenuActions(row, plan);
+            }
+            pressedAt[0] = 0;
+        });
+        more.setOnAction(event -> {
+            event.consume();
+            showMenuActions(more, plan);
+        });
+        more.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
+        return row;
+    }
+
+    private void showMenuActions(javafx.scene.Node anchor, DailyPlan plan) {
+        ContextMenu menu = new ContextMenu();
+        MenuItem edit = new MenuItem("Edit");
+        MenuItem delete = new MenuItem("Delete");
+        MenuItem copy = new MenuItem("Copy to a future date");
+        edit.setOnAction(event -> AppDialogs.showEditPlan(owner, plan).ifPresent(change -> {
+            boolean saved = planStore.update(plan, change.mealPeriod(), change.recipe().id());
+            refresh();
+            menuStatus.setText(saved ? "Menu item updated." : "Could not save this change.");
+        }));
+        delete.setOnAction(event -> {
+            boolean saved = planStore.remove(plan);
+            refresh();
+            menuStatus.setText(saved ? "Menu item deleted." : "Could not save this change.");
+        });
+        copy.setOnAction(event -> AppDialogs.chooseFutureDate(owner).ifPresent(date -> {
+            boolean saved = planStore.copyTo(plan, date);
+            refresh();
+            menuStatus.setText(saved
+                    ? "Copied to " + date.format(DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH)) + "."
+                    : "Could not save the copied meal.");
+        }));
+        menu.getItems().setAll(edit, delete, copy);
+        menu.show(anchor, javafx.geometry.Side.BOTTOM, 0, 0);
+    }
+
+    private void openSchedule() {
+        AppDialogs.showSchedule(owner, planStore).ifPresent(onSchedulePlan);
+    }
+
+    private VBox card(String title, javafx.scene.Node... children) {
+        Label heading = new Label(title);
+        heading.getStyleClass().add("card-heading");
+        VBox card = new VBox(10, heading);
+        card.getStyleClass().add("content-card");
+        card.getChildren().addAll(children);
+        return card;
+    }
+}
