@@ -181,13 +181,27 @@ public final class KitchenPage extends BorderPane {
     }
 
     private void randomizeChoices() {
+        // Retry until the random picks leave at least one recipe that fits them.
+        for (int attempt = 0; attempt < 20; attempt++) {
+            pickRandomTags();
+            if (!RecipeCatalog.matching(selectedTags()).isEmpty()) {
+                break;
+            }
+        }
+        status.setText("Random tags selected. You can still change any choice.");
+    }
+
+    private void pickRandomTags() {
+        // Diet choices are the user's requirements, not something to randomize: keep them.
+        Set<String> diet = new LinkedHashSet<>(selectedTags());
+        diet.retainAll(RecipeCatalog.DIET_TAGS);
         resetChoices();
+        diet.forEach(tag -> tagButtons.get(tag).setSelected(true));
         List<List<String>> groups = new ArrayList<>(List.of(
                 List.of("Sour", "Sweet", "Bitter", "Spicy", "Light", "Hearty"),
                 List.of("Breakfast", "Lunch", "Dinner", "Late-night snack"),
                 List.of("Hot", "Cold"),
-                List.of("Comforting", "Fresh", "Cozy", "Celebratory", "Quick"),
-                List.of("Vegetarian", "Gluten-Free", "Dairy-Free", "Low-Carb", "High-Protein")
+                List.of("Comforting", "Fresh", "Cozy", "Celebratory", "Quick")
         ));
         int count = ThreadLocalRandom.current().nextInt(2, groups.size() + 1);
         for (int i = 0; i < count; i++) {
@@ -196,7 +210,6 @@ public final class KitchenPage extends BorderPane {
             String tag = group.get(ThreadLocalRandom.current().nextInt(group.size()));
             tagButtons.get(tag).setSelected(true);
         }
-        status.setText("Random tags selected. You can still change any choice.");
     }
 
     @FunctionalInterface

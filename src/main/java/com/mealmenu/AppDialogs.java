@@ -219,17 +219,23 @@ final class AppDialogs {
         ingredients.getStyleClass().add("recipe-detail");
         ingredients.setWrapText(true);
 
-        Recipe[] current = {RecipeCatalog.recommend(selectedTags, null)};
+        Recipe[] current = new Recipe[1];
+        Set<String> seen = new java.util.HashSet<>();
+        int matchCount = RecipeCatalog.matching(selectedTags).size();
         Consumer<Recipe> display = recipe -> {
             current[0] = recipe;
+            seen.add(recipe.id());
             recipeName.setText(recipe.name());
+            // Tags the user asked for first, so it's clear why this recipe was picked.
+            List<String> shownTags = new java.util.ArrayList<>(recipe.tags().stream()
+                    .filter(selectedTags::contains).sorted().toList());
+            recipe.tags().stream().filter(tag -> !selectedTags.contains(tag)).sorted()
+                    .forEach(shownTags::add);
             recipeMeta.setText(recipe.minutes() + " min  ·  "
-                    + recipe.tags().stream().limit(4).reduce((a, b) -> a + "  ·  " + b)
-                    .orElse("American classic"));
+                    + String.join("  ·  ", shownTags.subList(0, Math.min(4, shownTags.size()))));
             description.setText(recipe.description());
             ingredients.setText("Ingredients: " + String.join(", ", recipe.ingredients()));
         };
-        display.accept(current[0]);
         Button viewRecipe = new Button("View Full Recipe");
         viewRecipe.getStyleClass().add("link-button");
         viewRecipe.setOnAction(event -> showRecipeDetails(stage, current[0]));
@@ -241,9 +247,13 @@ final class AppDialogs {
         another.getStyleClass().add("secondary-button");
         another.setMaxWidth(Double.MAX_VALUE);
         another.setOnAction(event -> {
-            Recipe next = RecipeCatalog.recommend(selectedTags, current[0].id());
-            display.accept(next);
-            addStatus.setText("");
+            if (seen.size() >= matchCount) {
+                seen.clear();
+                seen.add(current[0].id());
+            }
+            RecipeCatalog.recommend(selectedTags, seen).ifPresent(display);
+            addStatus.setText(matchCount + (matchCount == 1 ? " recipe matches" : " recipes match")
+                    + " your choices.");
         });
 
         PlanSelection[] result = new PlanSelection[1];
@@ -264,11 +274,28 @@ final class AppDialogs {
         HBox.setHgrow(another, Priority.ALWAYS);
         HBox.setHgrow(add, Priority.ALWAYS);
         another.setMaxWidth(Double.MAX_VALUE);
-        body.getChildren().addAll(
-                new Label("Plan this suggestion for:"), datePicker, periodPicker,
-                recipeName, recipeMeta, description, ingredients, viewRecipe,
-                addStatus, actions
-        );
+        Optional<Recipe> first = RecipeCatalog.recommend(selectedTags, seen);
+        if (first.isPresent()) {
+            display.accept(first.get());
+            addStatus.setText(matchCount + (matchCount == 1 ? " recipe matches" : " recipes match")
+                    + " your choices.");
+            body.getChildren().addAll(
+                    new Label("Plan this suggestion for:"), datePicker, periodPicker,
+                    recipeName, recipeMeta, description, ingredients, viewRecipe,
+                    addStatus, actions
+            );
+        } else {
+            // Diet and meal-time choices are strict, so say so instead of suggesting something that breaks them.
+            List<String> required = selectedTags.stream()
+                    .filter(tag -> RecipeCatalog.DIET_TAGS.contains(tag)
+                            || RecipeCatalog.MEAL_TAGS.contains(tag))
+                    .sorted().toList();
+            recipeName.setText("No recipe fits all of these");
+            description.setText("Nothing in the recipe list is " + String.join(" + ", required)
+                    + ". Remove one of these choices, or check the Eat tab for dining hall dishes "
+                    + "you can filter by diet.");
+            body.getChildren().addAll(recipeName, description);
+        }
         setCenter(stage, body);
         stage.showAndWait();
         return Optional.ofNullable(result[0]);
