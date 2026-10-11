@@ -1,13 +1,9 @@
 package com.mealmenu;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
-import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -22,6 +18,8 @@ import javafx.util.Duration;
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class Main extends Application {
@@ -39,8 +37,7 @@ public class Main extends Application {
     private NavigationBar navigationBar;
     private MealPlanStore mealPlanStore;
     private LocalAccountService accountService;
-    private Node currentPage;
-    private ParallelTransition pageTransition;
+    private SwipeNavigator swipeNavigator;
     private double dragOffsetX;
     private double dragOffsetY;
 
@@ -48,7 +45,12 @@ public class Main extends Application {
     public void start(Stage stage) {
         primaryStage = stage;
         stage.initStyle(StageStyle.TRANSPARENT);
-        stage.setTitle("Daily Menu");
+        stage.setTitle("dailyrecipes");
+        stage.focusedProperty().addListener((observable, oldValue, focused) -> {
+            if (!focused && swipeNavigator != null) {
+                swipeNavigator.cancelDrag();
+            }
+        });
         stage.setResizable(false);
 
         BorderPane deviceFrame = new BorderPane();
@@ -135,7 +137,10 @@ public class Main extends Application {
 
     private void showAuthPage() {
         pageHost = null;
-        currentPage = null;
+        if (swipeNavigator != null) {
+            swipeNavigator.dispose();
+            swipeNavigator = null;
+        }
         screenSurface.getChildren().setAll(new AuthPage(
                 primaryStage,
                 accountService,
@@ -176,6 +181,17 @@ public class Main extends Application {
                 accountService,
                 this::logout
         );
+        swipeNavigator = new SwipeNavigator(pageHost,
+                List.of("Kitchen", "Home", "Profile"),
+                Map.of("Kitchen", kitchenPage, "Home", homePage, "Profile", profilePage),
+                name -> {
+                    if (name.equals("Home")) {
+                        homePage.refresh();
+                    } else if (name.equals("Kitchen")) {
+                        kitchenPage.refreshPreferences();
+                    }
+                },
+                navigationBar::setActivePage);
 
         BorderPane applicationLayout = new BorderPane();
         applicationLayout.getStyleClass().add("application-layout");
@@ -207,50 +223,9 @@ public class Main extends Application {
     }
 
     private void navigateTo(String pageName) {
-        if (pageHost == null || homePage == null) {
-            return;
+        if (swipeNavigator != null) {
+            swipeNavigator.show(pageName);
         }
-        Node nextPage = switch (pageName) {
-            case "Kitchen" -> kitchenPage;
-            case "Profile" -> profilePage;
-            default -> homePage;
-        };
-        if (navigationBar != null) {
-            navigationBar.setActivePage(pageName);
-        }
-        if (nextPage == kitchenPage) {
-            kitchenPage.refreshPreferences();
-        }
-        if (nextPage == currentPage) {
-            if (nextPage == homePage) {
-                homePage.refresh();
-            }
-            return;
-        }
-        if (pageTransition != null) {
-            pageTransition.stop();
-        }
-        pageHost.getChildren().setAll(nextPage);
-        currentPage = nextPage;
-        if (nextPage == homePage) {
-            homePage.refresh();
-        }
-        nextPage.setOpacity(0);
-        nextPage.setTranslateY(7);
-        FadeTransition fade = new FadeTransition(Duration.millis(180), nextPage);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-        TranslateTransition slide = new TranslateTransition(
-                Duration.millis(180), nextPage
-        );
-        slide.setFromY(7);
-        slide.setToY(0);
-        pageTransition = new ParallelTransition(fade, slide);
-        pageTransition.setOnFinished(event -> {
-            nextPage.setOpacity(1);
-            nextPage.setTranslateY(0);
-        });
-        pageTransition.play();
     }
 
     public static void main(String[] args) {

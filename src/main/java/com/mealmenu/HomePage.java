@@ -143,7 +143,7 @@ public final class HomePage extends ScrollPane {
         todayDate.setText(now.format(DateTimeFormatter.ofPattern(
                 "EEEE, MMMM d, yyyy", Locale.ENGLISH)));
         clock.setText(now.format(DateTimeFormatter.ofPattern("h:mm:ss a", Locale.ENGLISH)));
-        daysUsing.setText("Day " + usageTracker.daysUsing() + " with Daily Menu");
+        daysUsing.setText("Day " + usageTracker.daysUsing() + " with dailyrecipes");
     }
 
     private String currentUsername() {
@@ -216,12 +216,16 @@ public final class HomePage extends ScrollPane {
                 event.consume();
                 return;
             }
-            if (event.getButton() == MouseButton.PRIMARY) {
+            if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()) {
                 AppDialogs.showRecipeDetails(owner, recipe);
             }
         });
         long[] pressedAt = {0};
-        row.setOnMousePressed(event -> pressedAt[0] = System.nanoTime());
+        row.setOnMousePressed(event -> {
+            longPressTriggered[0] = false;
+            pressedAt[0] = event.getButton() == MouseButton.PRIMARY ? System.nanoTime() : 0;
+        });
+        row.setOnMouseDragged(event -> pressedAt[0] = 0);
         row.setOnMouseReleased(event -> {
             if (pressedAt[0] != 0 && System.nanoTime() - pressedAt[0] > 550_000_000L) {
                 longPressTriggered[0] = true;

@@ -22,6 +22,7 @@ import java.util.UUID;
 
 public final class LocalAccountService {
 
+    public static final int MINIMUM_PASSWORD_LENGTH = 6;
     private static final int ITERATIONS = 160_000;
     private static final int KEY_LENGTH = 256;
     private static final Set<String> ALLOWED_PREFERENCES = Set.of(
@@ -34,6 +35,7 @@ public final class LocalAccountService {
             .resolve("accounts.properties");
     private Account currentAccount;
     private String rememberedUsername;
+    private String lastUsername;
 
     public LocalAccountService() {
         loadAccounts();
@@ -52,8 +54,8 @@ public final class LocalAccountService {
         if (validation != null) {
             return validation;
         }
-        if (password.length < 6) {
-            return "Use a password with at least 8 characters.";
+        if (password.length < MINIMUM_PASSWORD_LENGTH) {
+            return "Use a password with at least 6 characters.";
         }
         if (accounts.containsKey(key)) {
             return "That username is already registered on this computer.";
@@ -71,11 +73,14 @@ public final class LocalAccountService {
         accounts.put(key, account);
         currentAccount = account;
         rememberedUsername = rememberMe ? key : null;
+        String previousLastUsername = lastUsername;
+        lastUsername = key;
 
         if (!saveAccounts()) {
             accounts.remove(key);
             currentAccount = null;
             rememberedUsername = null;
+            lastUsername = previousLastUsername;
             return "The account could not be saved to this computer.";
         }
         return null;
@@ -92,9 +97,12 @@ public final class LocalAccountService {
 
         currentAccount = account;
         rememberedUsername = rememberMe ? key : null;
+        String previousLastUsername = lastUsername;
+        lastUsername = key;
         if (!saveAccounts()) {
             currentAccount = null;
             rememberedUsername = null;
+            lastUsername = previousLastUsername;
             return "The local account file could not be updated.";
         }
         return null;
@@ -116,6 +124,22 @@ public final class LocalAccountService {
 
     public String username() {
         return currentAccount == null ? "" : currentAccount.username();
+    }
+
+    public String lastUsername() {
+        Account account = accounts.get(lastUsername);
+        return account == null ? "" : account.username();
+    }
+
+    public String accountIdForUsername(String username) {
+        Account account = accounts.get(normalize(username));
+        return account == null ? "" : account.id();
+    }
+
+    public boolean passwordMatches(String username, char[] password) {
+        Account account = accounts.get(normalize(username));
+        return account != null && MessageDigest.isEqual(
+                hashPassword(password, account.salt()), account.passwordHash());
     }
 
     public Set<String> preferences() {
@@ -156,11 +180,12 @@ public final class LocalAccountService {
         if (!oldKey.equals(newKey) && accounts.containsKey(newKey)) {
             return "That username is already registered on this computer.";
         }
-        if (newPassword.length > 0 && newPassword.length < 8) {
-            return "A new password must have at least 8 characters.";
+        if (newPassword.length > 0 && newPassword.length < MINIMUM_PASSWORD_LENGTH) {
+            return "A new password must have at least 6 characters.";
         }
 
         Account oldAccount = currentAccount;
+        String previousLastUsername = lastUsername;
         byte[] salt = oldAccount.salt();
         byte[] passwordHash = oldAccount.passwordHash();
         if (newPassword.length > 0) {
@@ -176,13 +201,25 @@ public final class LocalAccountService {
         if (rememberedUsername != null && rememberedUsername.equals(oldKey)) {
             rememberedUsername = newKey;
         }
+        if (oldKey.equals(lastUsername)) {
+            lastUsername = newKey;
+        }
         if (saveAccounts()) {
+            if (newPassword.length > 0) {
+                try {
+                    new RememberedPasswordStore().forget(currentAccount.id());
+                } catch (IOException exception) {
+                    // Autofill also validates the hash, so stale copies cannot be reused.
+                    System.err.println("Could not remove the old saved password.");
+                }
+            }
             return null;
         }
 
         accounts.remove(newKey);
         accounts.put(oldKey, oldAccount);
         currentAccount = oldAccount;
+        lastUsername = previousLastUsername;
         if (rememberedUsername != null && rememberedUsername.equals(newKey)) {
             rememberedUsername = oldKey;
         }
@@ -232,6 +269,12 @@ public final class LocalAccountService {
                 rememberedUsername = null;
             }
         }
+        try {
+            lastUsername = decode(saved.getProperty("last-user",
+                    rememberedUsername == null ? "" : encode(rememberedUsername)));
+        } catch (IllegalArgumentException exception) {
+            lastUsername = null;
+        }
     }
 
     private boolean saveAccounts() {
@@ -246,6 +289,7 @@ public final class LocalAccountService {
         saved.setProperty("remembered-user", rememberedUsername == null
                 ? ""
                 : encode(rememberedUsername));
+        saved.setProperty("last-user", lastUsername == null ? "" : encode(lastUsername));
 
         try {
             Files.createDirectories(storageFile.getParent());

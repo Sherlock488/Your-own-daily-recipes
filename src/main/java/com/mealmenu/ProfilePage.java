@@ -36,7 +36,7 @@ public final class ProfilePage extends ScrollPane {
     private final Label usernameLabel = new Label();
     private final Label photoStatus = new Label("Tap your photo to choose an image.");
     private final ImageView avatarImage = new ImageView();
-    private final Label avatarInitials = new Label("DM");
+    private final Label avatarInitials = new Label("DR");
     private final VBox settingsPanel = new VBox(10);
     private final VBox informationPanel = new VBox(10);
     private final CheckBox vegetarian = new CheckBox("Vegetarian");
@@ -116,8 +116,9 @@ public final class ProfilePage extends ScrollPane {
     private void buildSettingsPanel() {
         Label heading = new Label("Food Preferences");
         heading.getStyleClass().add("card-heading");
-        Label hint = new Label("Saved preferences are preselected in Kitchen.");
+        Label hint = new Label("Kitchen uses one saved preference as its default.");
         hint.getStyleClass().add("muted-text");
+        hint.setWrapText(true);
         Button save = new Button("Save Settings");
         save.getStyleClass().add("primary-button");
         save.setMaxWidth(Double.MAX_VALUE);

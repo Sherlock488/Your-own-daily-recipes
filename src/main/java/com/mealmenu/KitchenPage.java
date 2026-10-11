@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -28,6 +29,8 @@ public final class KitchenPage extends BorderPane {
     private final LocalAccountService accountService;
     private final PlanSaver planSaver;
     private final Map<String, ToggleButton> tagButtons = new LinkedHashMap<>();
+    private final Map<String, ToggleGroup> tagGroups = new LinkedHashMap<>();
+    private Set<String> appliedPreferences;
     private final Label status = new Label();
     private LocalDate targetDate = LocalDate.now();
     private String preferredMealPeriod = AppDialogs.defaultMealPeriod();
@@ -43,8 +46,9 @@ public final class KitchenPage extends BorderPane {
         content.setPadding(new Insets(17, 17, 18, 17));
         Label title = new Label("Kitchen");
         title.getStyleClass().add("page-title");
-        Label subtitle = new Label("Choose any tags that fit. Every choice is optional.");
+        Label subtitle = new Label("Choose up to one tag per group. Every choice is optional.");
         subtitle.getStyleClass().add("page-subtitle");
+        subtitle.setWrapText(true);
         content.getChildren().addAll(
                 title,
                 subtitle,
@@ -87,12 +91,7 @@ public final class KitchenPage extends BorderPane {
         actionBar.setPadding(new Insets(9, 12, 11, 12));
         setBottom(actionBar);
 
-        accountService.preferences().forEach(tag -> {
-            ToggleButton button = tagButtons.get(tag);
-            if (button != null) {
-                button.setSelected(true);
-            }
-        });
+        refreshPreferences();
     }
 
     public void setTargetDate(LocalDate date) {
@@ -102,11 +101,17 @@ public final class KitchenPage extends BorderPane {
 
     public void refreshPreferences() {
         Set<String> saved = accountService.preferences();
+        if (saved.equals(appliedPreferences)) {
+            return;
+        }
+        appliedPreferences = Set.copyOf(saved);
+        tagGroups.get("Health Preferences").selectToggle(null);
         for (String tag : List.of("Vegetarian", "Gluten-Free", "Dairy-Free",
                 "Low-Carb", "High-Protein")) {
             ToggleButton button = tagButtons.get(tag);
-            if (button != null) {
-                button.setSelected(saved.contains(tag));
+            if (button != null && saved.contains(tag)) {
+                button.setSelected(true);
+                break;
             }
         }
     }
@@ -144,9 +149,12 @@ public final class KitchenPage extends BorderPane {
         heading.setMaxWidth(Double.MAX_VALUE);
         FlowPane choices = new FlowPane(8, 8);
         choices.getStyleClass().add("tag-choice-list");
+        ToggleGroup group = new ToggleGroup();
+        tagGroups.put(title, group);
         for (String tag : tags) {
             ToggleButton button = new ToggleButton(tag);
             button.getStyleClass().add("tag-choice");
+            button.setToggleGroup(group);
             tagButtons.put(tag, button);
             choices.getChildren().add(button);
         }
