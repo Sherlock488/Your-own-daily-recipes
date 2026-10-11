@@ -89,6 +89,14 @@ final class EatDialogs {
     static void showRestaurant(Stage owner, RestaurantCatalog.Restaurant restaurant, Campus campus,
                                EatPage.PlanAdder planAdder) {
         Stage stage = AppDialogs.createModal(owner, restaurant.name(), 330, 600);
+        AppDialogs.setCenter(stage, scroll(restaurantDetail(stage, restaurant, campus, planAdder, false)));
+        stage.showAndWait();
+    }
+
+    /** Restaurant info, action buttons and menu; used by the dialog and the desktop detail pane. */
+    static VBox restaurantDetail(Stage owner, RestaurantCatalog.Restaurant restaurant, Campus campus,
+                                 EatPage.PlanAdder planAdder, boolean withTitle) {
+        Stage stage = owner;
         VBox body = new VBox(10);
         body.getStyleClass().add("dialog-content");
         body.setPadding(new Insets(14));
@@ -101,6 +109,12 @@ final class EatDialogs {
         if (restaurant.hasLocation()) {
             badges.getChildren().add(AppDialogs.badge(String.format(Locale.US, "%.1f mi from %s",
                     campus.milesTo(restaurant.lat(), restaurant.lng()), campus.label())));
+        }
+        if (withTitle) {
+            Label title = cjk(new Label(restaurant.name()));
+            title.getStyleClass().add("detail-title");
+            title.setWrapText(true);
+            body.getChildren().add(title);
         }
         body.getChildren().add(badges);
         body.getChildren().add(infoLine("📍 " + restaurant.address()));
@@ -155,8 +169,7 @@ final class EatDialogs {
             disclaimer.getStyleClass().add("muted-text");
             body.getChildren().addAll(source, disclaimer);
         }
-        AppDialogs.setCenter(stage, scroll(body));
-        stage.showAndWait();
+        return body;
     }
 
     private static VBox menuRow(Stage stage, RestaurantCatalog.Restaurant restaurant,

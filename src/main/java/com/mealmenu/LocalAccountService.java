@@ -4,7 +4,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,6 +21,7 @@ import java.util.UUID;
 
 public final class LocalAccountService {
 
+    static final int MIN_PASSWORD_LENGTH = 8;
     private static final int ITERATIONS = 160_000;
     private static final int KEY_LENGTH = 256;
     private static final Set<String> ALLOWED_PREFERENCES = Set.of(
@@ -34,6 +34,10 @@ public final class LocalAccountService {
             .resolve("accounts.properties");
     private Account currentAccount;
     private String rememberedUsername;
+    /** False when accounts.properties exists but couldn't be read; saving would erase every account. */
+    private boolean writable = true;
+    /** Records that failed to parse are written back untouched rather than dropped. */
+    private final Map<String, String> unreadableRecords = new HashMap<>();
 
     public LocalAccountService() {
         loadAccounts();
@@ -52,8 +56,8 @@ public final class LocalAccountService {
         if (validation != null) {
             return validation;
         }
-        if (password.length < 6) {
-            return "Use a password with at least 8 characters.";
+        if (password.length < MIN_PASSWORD_LENGTH) {
+            return "Use a password with at least " + MIN_PASSWORD_LENGTH + " characters.";
         }
         if (accounts.containsKey(key)) {
             return "That username is already registered on this computer.";
@@ -100,10 +104,11 @@ public final class LocalAccountService {
         return null;
     }
 
-    public void logout() {
+    /** Returns false if "keep me signed in" could not be cleared on disk. */
+    public boolean logout() {
         currentAccount = null;
         rememberedUsername = null;
-        saveAccounts();
+        return saveAccounts();
     }
 
     public boolean isLoggedIn() {
@@ -142,9 +147,14 @@ public final class LocalAccountService {
         return false;
     }
 
-    public String updateInformation(String newUsername, char[] newPassword) {
+    public String updateInformation(String newUsername, char[] currentPassword, char[] newPassword) {
         if (currentAccount == null) {
             return "Sign in before changing account information.";
+        }
+        // Remember-me skips the login screen, so require the current password for account changes.
+        if (!MessageDigest.isEqual(hashPassword(currentPassword, currentAccount.salt()),
+                currentAccount.passwordHash())) {
+            return "Your current password is incorrect.";
         }
         String cleanName = newUsername == null ? "" : newUsername.trim();
         String validation = validateUsername(cleanName);
@@ -156,8 +166,8 @@ public final class LocalAccountService {
         if (!oldKey.equals(newKey) && accounts.containsKey(newKey)) {
             return "That username is already registered on this computer.";
         }
-        if (newPassword.length > 0 && newPassword.length < 8) {
-            return "A new password must have at least 8 characters.";
+        if (newPassword.length > 0 && newPassword.length < MIN_PASSWORD_LENGTH) {
+            return "A new password must have at least " + MIN_PASSWORD_LENGTH + " characters.";
         }
 
         Account oldAccount = currentAccount;
@@ -196,8 +206,10 @@ public final class LocalAccountService {
         Properties saved = new Properties();
         try (InputStream input = Files.newInputStream(storageFile)) {
             saved.load(input);
-        } catch (IOException exception) {
-            System.err.println("Could not load local accounts: " + exception.getMessage());
+        } catch (IOException | IllegalArgumentException exception) {
+            writable = false;
+            System.err.println("Could not load local accounts; not saving over them: "
+                    + exception.getMessage());
             return;
         }
 
@@ -209,6 +221,7 @@ public final class LocalAccountService {
                 String key = decode(property.substring("account.".length()));
                 String[] values = saved.getProperty(property).split("\\.", -1);
                 if (values.length != 5) {
+                    unreadableRecords.put(property, saved.getProperty(property));
                     continue;
                 }
                 Account account = new Account(
@@ -220,7 +233,8 @@ public final class LocalAccountService {
                 );
                 accounts.put(key, account);
             } catch (IllegalArgumentException exception) {
-                System.err.println("Skipped a damaged local account record.");
+                unreadableRecords.put(property, saved.getProperty(property));
+                System.err.println("Kept a damaged local account record as-is.");
             }
         }
 
@@ -235,7 +249,11 @@ public final class LocalAccountService {
     }
 
     private boolean saveAccounts() {
+        if (!writable) {
+            return false;
+        }
         Properties saved = new Properties();
+        unreadableRecords.forEach(saved::setProperty);
         accounts.forEach((key, account) -> saved.setProperty(
                 "account." + encode(key),
                 account.id() + "." + encode(account.username()) + "."
@@ -248,10 +266,7 @@ public final class LocalAccountService {
                 : encode(rememberedUsername));
 
         try {
-            Files.createDirectories(storageFile.getParent());
-            try (OutputStream output = Files.newOutputStream(storageFile)) {
-                saved.store(output, "Daily Menu local accounts");
-            }
+            SafeFiles.storeProperties(storageFile, saved, "Daily Menu local accounts");
             return true;
         } catch (IOException exception) {
             System.err.println("Could not save local accounts: " + exception.getMessage());

@@ -23,6 +23,18 @@ The **Eat** tab helps Rutgers–New Brunswick students decide where to eat:
 |---|---|---|
 | ![](docs/screenshots/dining-halls.png) | ![](docs/screenshots/restaurant-search.png) | ![](docs/screenshots/restaurant-detail.png) |
 
+### Desktop and phone layouts
+
+The app opens as a normal resizable **desktop** window with a sidebar; the Eat tab uses columns
+(filters on the left, menus or restaurant details on the right). Switch to the compact **phone**
+layout under *Profile → Window Style* (no restart or re-login), or launch with `--phone` / `--desktop`:
+
+```powershell
+mvn javafx:run "-Djavafx.args=--phone"
+```
+
+![](docs/screenshots/desktop-restaurants.png)
+
 ### Refreshing the data
 
 ```powershell

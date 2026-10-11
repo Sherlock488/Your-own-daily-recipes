@@ -43,11 +43,13 @@ public final class EatPage extends BorderPane {
         DIET_FILTERS.put("Vegan", item -> item.icons().contains("Vegan"));
         DIET_FILTERS.put("Vegetarian", item -> item.icons().contains("Vegan")
                 || item.icons().contains("Vegetarian"));
-        DIET_FILTERS.put("No Milk", item -> !item.icons().contains("Milk"));
-        DIET_FILTERS.put("No Wheat", item -> !item.icons().contains("Wheat"));
-        DIET_FILTERS.put("No Nuts", item -> !item.icons().contains("Peanuts")
+        // Dishes with no icon data are excluded: missing allergen info is not proof of "none".
+        DIET_FILTERS.put("No Milk", item -> !item.icons().isEmpty() && !item.icons().contains("Milk"));
+        DIET_FILTERS.put("No Wheat", item -> !item.icons().isEmpty() && !item.icons().contains("Wheat"));
+        DIET_FILTERS.put("No Nuts", item -> !item.icons().isEmpty() && !item.icons().contains("Peanuts")
                 && !item.icons().contains("Tree Nuts"));
-        DIET_FILTERS.put("No Shellfish", item -> !item.icons().contains("Shellfish"));
+        DIET_FILTERS.put("No Shellfish", item -> !item.icons().isEmpty()
+                && !item.icons().contains("Shellfish"));
     }
 
     private final Stage owner;
@@ -61,7 +63,7 @@ public final class EatPage extends BorderPane {
     // Dining hall state
     private DiningService.Hall hall;
     private String mealSlug;
-    private LocalDate date = LocalDate.now();
+    private LocalDate date = LocalDate.now(Campus.ZONE);
     private final Map<String, ToggleButton> mealButtons = new LinkedHashMap<>();
     private final Map<String, ToggleButton> dietButtons = new LinkedHashMap<>();
     private final FlowPane mealChoices = new FlowPane(7, 7);
@@ -72,7 +74,7 @@ public final class EatPage extends BorderPane {
     private final Button nextDay = new Button("›");
     private final TextField dishSearch = new TextField();
     private final Label diningStatus = new Label();
-    private final VBox stationList = new VBox(10);
+    private final javafx.scene.layout.Pane stationList;
     private List<DiningService.Station> stations = List.of();
     private int menuRequest;
 
@@ -85,9 +87,26 @@ public final class EatPage extends BorderPane {
     private final Label restaurantStatus = new Label();
     private final VBox restaurantList = new VBox(9);
 
+    private final boolean wide;
+    private final ScrollPane restaurantDetailPane = new ScrollPane();
+    private RestaurantCatalog.Restaurant selectedRestaurant;
+
     public EatPage(Stage owner, PlanAdder planAdder) {
+        this(owner, false, planAdder);
+    }
+
+    /** {@code wide} lays the page out in columns for the desktop window. */
+    public EatPage(Stage owner, boolean wide, PlanAdder planAdder) {
         this.owner = owner;
+        this.wide = wide;
         this.planAdder = planAdder;
+        if (wide) {
+            FlowPane grid = new FlowPane(12, 12);
+            grid.setPadding(new Insets(4, 20, 20, 4));
+            stationList = grid;
+        } else {
+            stationList = new VBox(10);
+        }
         getStyleClass().add("kitchen-page");
 
         Label title = new Label("Rutgers Eats");
@@ -106,8 +125,16 @@ public final class EatPage extends BorderPane {
 
         buildDiningView();
         buildRestaurantView();
-        views.add("halls", scroll(diningContent));
-        views.add("restaurants", scroll(restaurantContent));
+        if (wide) {
+            views.add("halls", columns(diningContent, stationList, 330));
+            restaurantDetailPane.getStyleClass().add("page-scroll");
+            restaurantDetailPane.setFitToWidth(true);
+            restaurantDetailPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            views.add("restaurants", columns(restaurantContent, restaurantDetailPane, 400));
+        } else {
+            views.add("halls", scroll(diningContent));
+            views.add("restaurants", scroll(restaurantContent));
+        }
         setCenter(views);
 
         modeGroup.selectedToggleProperty().addListener((observable, old, selected) -> {
@@ -181,13 +208,27 @@ public final class EatPage extends BorderPane {
         diningStatus.getStyleClass().add("status-text");
         diningStatus.setWrapText(true);
         diningContent.getChildren().addAll(hallChoices, hallCard, dateRow, mealChoices,
-                dishSearch, dietChoices, diningStatus, stationList);
+                dishSearch, dietChoices, diningStatus);
+        if (!wide) {
+            diningContent.getChildren().add(stationList);
+        }
 
         if (!dining.halls().isEmpty()) {
             ((ToggleButton) hallChoices.getChildren().get(0)).setSelected(true);
             selectHall(dining.halls().get(0));
         } else {
             diningStatus.setText("Dining hall data is unavailable.");
+        }
+    }
+
+    /** Called when the tab is shown: an app left open overnight moves back to today. */
+    public void onShow() {
+        if (date.isBefore(LocalDate.now(Campus.ZONE))) {
+            date = LocalDate.now(Campus.ZONE);
+            if (hall != null) {
+                mealSlug = defaultMeal();
+                selectHall(hall);
+            }
         }
     }
 
@@ -221,7 +262,7 @@ public final class EatPage extends BorderPane {
     }
 
     private String defaultMeal() {
-        LocalTime now = LocalTime.now();
+        LocalTime now = LocalTime.now(Campus.ZONE);
         boolean weekend = date.getDayOfWeek() == DayOfWeek.SATURDAY
                 || date.getDayOfWeek() == DayOfWeek.SUNDAY;
         String preferred;
@@ -241,7 +282,7 @@ public final class EatPage extends BorderPane {
 
     private void changeDay(int delta) {
         LocalDate next = date.plusDays(delta);
-        if (next.isBefore(LocalDate.now()) || next.isAfter(LocalDate.now().plusDays(MAX_DAYS_AHEAD))) {
+        if (next.isBefore(LocalDate.now(Campus.ZONE)) || next.isAfter(LocalDate.now(Campus.ZONE).plusDays(MAX_DAYS_AHEAD))) {
             return;
         }
         date = next;
@@ -252,8 +293,8 @@ public final class EatPage extends BorderPane {
         if (hall == null || mealSlug == null) {
             return;
         }
-        previousDay.setDisable(!date.isAfter(LocalDate.now()));
-        nextDay.setDisable(!date.isBefore(LocalDate.now().plusDays(MAX_DAYS_AHEAD)));
+        previousDay.setDisable(!date.isAfter(LocalDate.now(Campus.ZONE)));
+        nextDay.setDisable(!date.isBefore(LocalDate.now(Campus.ZONE).plusDays(MAX_DAYS_AHEAD)));
         dateLabel.setText(dayLabel(date));
         hallInfo.setText(hall.campus() + " · " + hall.hoursOn(date) + "\n" + hall.address());
         diningStatus.setText("Loading menu…");
@@ -296,7 +337,7 @@ public final class EatPage extends BorderPane {
             if (items.isEmpty()) {
                 continue;
             }
-            stationList.getChildren().add(stationCard(station.name(), items, filtering || shown < 3));
+            stationList.getChildren().add(stationCard(station.name(), items, wide || filtering || shown < 3));
             shown++;
         }
         if (shown == 0) {
@@ -349,6 +390,10 @@ public final class EatPage extends BorderPane {
         });
         VBox card = new VBox(4, header, rows);
         card.getStyleClass().add("station-card");
+        if (wide) {
+            card.setPrefWidth(300);
+            card.setMaxWidth(300);
+        }
         return card;
     }
 
@@ -378,6 +423,9 @@ public final class EatPage extends BorderPane {
     }
 
     private static String dietSummary(DiningService.Item item) {
+        if (item.icons().isEmpty()) {
+            return "No allergen info — ask dining staff";
+        }
         List<String> parts = new ArrayList<>();
         if (item.icons().contains("Vegan")) {
             parts.add("Vegan");
@@ -486,6 +534,9 @@ public final class EatPage extends BorderPane {
             return;
         }
         restaurantStatus.setText(matches.size() + " places · sorted by distance from " + campus.label());
+        if (wide && !matches.isEmpty() && !matches.contains(selectedRestaurant)) {
+            showRestaurantDetail(matches.get(0), campus);
+        }
         for (RestaurantCatalog.Restaurant restaurant : matches) {
             restaurantList.getChildren().add(restaurantCard(restaurant, campus, query));
         }
@@ -524,18 +575,48 @@ public final class EatPage extends BorderPane {
             card.getChildren().add(hours);
         }
         card.getStyleClass().addAll("content-card", "restaurant-card");
-        card.setOnMouseClicked(event -> EatDialogs.showRestaurant(owner, restaurant, campus, planAdder));
+        if (restaurant == selectedRestaurant && wide) {
+            card.getStyleClass().add("selected-card");
+        }
+        card.setOnMouseClicked(event -> {
+            if (wide) {
+                showRestaurantDetail(restaurant, campus);
+                renderRestaurants();
+            } else {
+                EatDialogs.showRestaurant(owner, restaurant, campus, planAdder);
+            }
+        });
         return card;
+    }
+
+    private void showRestaurantDetail(RestaurantCatalog.Restaurant restaurant, Campus campus) {
+        selectedRestaurant = restaurant;
+        VBox detail = EatDialogs.restaurantDetail(owner, restaurant, campus, planAdder, true);
+        detail.setPadding(new Insets(6, 24, 24, 20));
+        restaurantDetailPane.setContent(detail);
+        restaurantDetailPane.setVvalue(0);
     }
 
     // ---------------------------------------------------------------- Helpers
 
+    /** Desktop layout: fixed-width scrolling sidebar on the left, wide scrolling area on the right. */
+    private static Node columns(Node left, Node right, double leftWidth) {
+        ScrollPane leftScroll = scroll(left);
+        leftScroll.setMinWidth(leftWidth);
+        leftScroll.setPrefWidth(leftWidth);
+        leftScroll.setMaxWidth(leftWidth);
+        Node rightNode = right instanceof ScrollPane ? right : scroll(right);
+        HBox.setHgrow(rightNode, Priority.ALWAYS);
+        HBox row = new HBox(8, leftScroll, rightNode);
+        return row;
+    }
+
     private static String dayLabel(LocalDate day) {
         String text = day.format(DateTimeFormatter.ofPattern("EEE, MMM d", Locale.ENGLISH));
-        if (day.equals(LocalDate.now())) {
+        if (day.equals(LocalDate.now(Campus.ZONE))) {
             return "Today · " + text;
         }
-        if (day.equals(LocalDate.now().plusDays(1))) {
+        if (day.equals(LocalDate.now(Campus.ZONE).plusDays(1))) {
             return "Tomorrow · " + text;
         }
         return text;

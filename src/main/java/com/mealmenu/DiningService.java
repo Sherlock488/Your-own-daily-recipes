@@ -48,7 +48,12 @@ public final class DiningService {
             .connectTimeout(Duration.ofSeconds(8))
             .followRedirects(HttpClient.Redirect.NORMAL)
             .build();
-    private final Map<String, Map<String, List<Station>>> weeks = new ConcurrentHashMap<>();
+    private static final Duration FRESH_FOR = Duration.ofMinutes(30);
+    private static final Duration RETRY_OFFLINE_AFTER = Duration.ofMinutes(2);
+
+    private final Map<String, CachedWeek> weeks = new ConcurrentHashMap<>();
+    /** When a fetch last failed, so offline browsing doesn't wait on a timeout for every click. */
+    private final Map<String, java.time.Instant> failures = new ConcurrentHashMap<>();
     private final JsonObject snapshot;
     private final List<Hall> halls;
 
@@ -76,10 +81,15 @@ public final class DiningService {
     public CompletableFuture<MenuResult> menu(String hallSlug, String mealSlug, LocalDate date) {
         LocalDate weekStart = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
         String key = hallSlug + "_" + mealSlug + "_" + weekStart;
-        Map<String, List<Station>> cached = weeks.get(key);
-        if (cached != null) {
+        java.time.Instant now = java.time.Instant.now();
+        CachedWeek cached = weeks.get(key);
+        if (cached != null && cached.fetched().plus(FRESH_FOR).isAfter(now)) {
             return CompletableFuture.completedFuture(
-                    new MenuResult(cached.getOrDefault(date.toString(), List.of()), "Live from Rutgers Dining"));
+                    new MenuResult(cached.days().getOrDefault(date.toString(), List.of()), "Live from Rutgers Dining"));
+        }
+        java.time.Instant failed = failures.get(key);
+        if (failed != null && failed.plus(RETRY_OFFLINE_AFTER).isAfter(now)) {
+            return CompletableFuture.completedFuture(offlineMenu(key, hallSlug, mealSlug, date));
         }
         String url = API + "/weeks/school/" + hallSlug + "/menu-type/" + mealSlug + "/"
                 + weekStart.getYear() + "/" + pad(weekStart.getMonthValue()) + "/"
@@ -96,11 +106,15 @@ public final class DiningService {
                     JsonObject days = compactWeek(JsonParser.parseString(response.body()).getAsJsonObject());
                     writeCache(key, days);
                     Map<String, List<Station>> parsed = parseDays(days);
-                    weeks.put(key, parsed);
+                    weeks.put(key, new CachedWeek(parsed, java.time.Instant.now()));
+                    failures.remove(key);
                     return new MenuResult(parsed.getOrDefault(date.toString(), List.of()),
                             "Live from Rutgers Dining");
                 })
-                .exceptionally(error -> offlineMenu(key, hallSlug, mealSlug, date));
+                .exceptionally(error -> {
+                    failures.put(key, java.time.Instant.now());
+                    return offlineMenu(key, hallSlug, mealSlug, date);
+                });
     }
 
     private MenuResult offlineMenu(String key, String hallSlug, String mealSlug, LocalDate date) {
@@ -392,6 +406,9 @@ public final class DiningService {
         public String hoursOn(LocalDate date) {
             return hours.getOrDefault(date.getDayOfWeek(), "Hours unavailable");
         }
+    }
+
+    private record CachedWeek(Map<String, List<Station>> days, java.time.Instant fetched) {
     }
 
     public record Meal(String slug, String name) {

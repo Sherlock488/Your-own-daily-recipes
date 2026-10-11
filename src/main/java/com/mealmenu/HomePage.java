@@ -221,7 +221,20 @@ public final class HomePage extends ScrollPane {
             }
         });
         long[] pressedAt = {0};
-        row.setOnMousePressed(event -> pressedAt[0] = System.nanoTime());
+        double[] pressPoint = {0, 0};
+        row.setOnMousePressed(event -> {
+            pressedAt[0] = System.nanoTime();
+            pressPoint[0] = event.getScreenX();
+            pressPoint[1] = event.getScreenY();
+            longPressTriggered[0] = false;
+        });
+        // Dragging to scroll is not a long press.
+        row.setOnMouseDragged(event -> {
+            if (Math.abs(event.getScreenX() - pressPoint[0]) > 8
+                    || Math.abs(event.getScreenY() - pressPoint[1]) > 8) {
+                pressedAt[0] = 0;
+            }
+        });
         row.setOnMouseReleased(event -> {
             if (pressedAt[0] != 0 && System.nanoTime() - pressedAt[0] > 550_000_000L) {
                 longPressTriggered[0] = true;

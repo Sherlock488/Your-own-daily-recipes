@@ -7,6 +7,9 @@ public enum Campus {
     LIVINGSTON("Livingston", 40.5240, -74.4365),
     COOK_DOUGLASS("Cook/Douglass", 40.4810, -74.4370);
 
+    /** Menus and hours follow New Brunswick time even if the computer is set to another zone. */
+    public static final java.time.ZoneId ZONE = java.time.ZoneId.of("America/New_York");
+
     private final String label;
     private final double lat;
     private final double lng;

@@ -2,7 +2,6 @@ package com.mealmenu;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +17,8 @@ public final class MealPlanStore {
 
     private final Path storageFile;
     private final Properties plans = new Properties();
+    /** False when the existing file couldn't be read; saving would then wipe the user's plans. */
+    private boolean writable = true;
 
     public MealPlanStore(String accountId) {
         storageFile = UserDataPaths.accountDirectory(accountId)
@@ -27,8 +28,9 @@ public final class MealPlanStore {
         }
         try (InputStream input = Files.newInputStream(storageFile)) {
             plans.load(input);
-        } catch (IOException exception) {
-            System.err.println("Could not load meal plans: " + exception.getMessage());
+        } catch (IOException | IllegalArgumentException exception) {
+            writable = false;
+            System.err.println("Could not load meal plans; not saving over them: " + exception.getMessage());
         }
     }
 
@@ -145,11 +147,11 @@ public final class MealPlanStore {
     }
 
     private boolean save() {
+        if (!writable) {
+            return false;
+        }
         try {
-            Files.createDirectories(storageFile.getParent());
-            try (OutputStream output = Files.newOutputStream(storageFile)) {
-                plans.store(output, "Daily Menu meal plans");
-            }
+            SafeFiles.storeProperties(storageFile, plans, "Daily Menu meal plans");
             return true;
         } catch (IOException exception) {
             System.err.println("Could not save meal plans: " + exception.getMessage());
