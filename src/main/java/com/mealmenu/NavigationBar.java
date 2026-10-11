@@ -22,8 +22,9 @@ public class NavigationBar extends HBox {
         setAlignment(Pos.CENTER);
         setPadding(new Insets(10, 12, 12, 12));
 
-        addButton("Kitchen");
         addButton("Home");
+        addButton("Eat");
+        addButton("Kitchen");
         addButton("Profile");
         setActivePage("Home");
     }

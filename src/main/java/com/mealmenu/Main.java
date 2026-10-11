@@ -34,6 +34,7 @@ public class Main extends Application {
     private StackPane screenSurface;
     private StackPane pageHost;
     private KitchenPage kitchenPage;
+    private EatPage eatPage;
     private HomePage homePage;
     private ProfilePage profilePage;
     private NavigationBar navigationBar;
@@ -47,6 +48,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         primaryStage = stage;
+        Links.init(getHostServices());
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setTitle("Daily Menu");
         stage.setResizable(false);
@@ -115,7 +117,11 @@ public class Main extends Application {
         minimumDelay.play();
 
         CompletableFuture<LocalAccountService> initialization =
-                CompletableFuture.supplyAsync(LocalAccountService::new);
+                CompletableFuture.supplyAsync(() -> {
+                    DiningService.get();
+                    RestaurantCatalog.all();
+                    return new LocalAccountService();
+                });
         CompletableFuture.allOf(minimumDisplayTime, initialization)
                 .whenComplete((ignored, error) -> Platform.runLater(() -> {
                     if (error != null) {
@@ -171,6 +177,14 @@ public class Main extends Application {
                     return saved;
                 }
         );
+        eatPage = new EatPage(
+                primaryStage,
+                (date, period, planId) -> {
+                    boolean saved = mealPlanStore.add(date, period, planId);
+                    homePage.refresh();
+                    return saved;
+                }
+        );
         profilePage = new ProfilePage(
                 primaryStage,
                 accountService,
@@ -199,6 +213,7 @@ public class Main extends Application {
             homePage.stopClock();
         }
         kitchenPage = null;
+        eatPage = null;
         homePage = null;
         profilePage = null;
         navigationBar = null;
@@ -211,6 +226,7 @@ public class Main extends Application {
             return;
         }
         Node nextPage = switch (pageName) {
+            case "Eat" -> eatPage;
             case "Kitchen" -> kitchenPage;
             case "Profile" -> profilePage;
             default -> homePage;

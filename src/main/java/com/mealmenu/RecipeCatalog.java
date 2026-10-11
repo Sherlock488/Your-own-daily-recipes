@@ -61,6 +61,9 @@ public final class RecipeCatalog {
     }
 
     public static Optional<Recipe> byId(String id) {
+        if (EatPlan.isEat(id)) {
+            return EatPlan.toRecipe(id);
+        }
         return RECIPES.stream().filter(recipe -> recipe.id().equals(id)).findFirst();
     }
 

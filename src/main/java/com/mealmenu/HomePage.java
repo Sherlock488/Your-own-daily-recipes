@@ -168,7 +168,7 @@ public final class HomePage extends ScrollPane {
             if (recipe == null) {
                 continue;
             }
-            Label item = new Label(plan.mealPeriod() + "  ·  " + recipe.name());
+            Label item = EatDialogs.cjk(new Label(plan.mealPeriod() + "  ·  " + recipe.name()));
             item.getStyleClass().add("reminder-item");
             item.setWrapText(true);
             todayPlanList.getChildren().add(item);
@@ -180,7 +180,7 @@ public final class HomePage extends ScrollPane {
         menuStatus.setText("");
         List<DailyPlan> plans = planStore.getUpcomingPlans(LocalDate.now());
         if (plans.isEmpty()) {
-            Label empty = new Label("Recipes you add from Kitchen will appear here.");
+            Label empty = new Label("Dishes you add from Eat or Kitchen will appear here.");
             empty.getStyleClass().add("muted-text");
             empty.setWrapText(true);
             menuList.getChildren().add(empty);
@@ -199,7 +199,7 @@ public final class HomePage extends ScrollPane {
                 + " · " + plan.mealPeriod();
         Label period = new Label(dateLabel);
         period.getStyleClass().add("time-badge");
-        Label name = new Label(recipe.name());
+        Label name = EatDialogs.cjk(new Label(recipe.name()));
         name.getStyleClass().add("recipe-title");
         name.setWrapText(true);
         Button more = new Button("⋯");

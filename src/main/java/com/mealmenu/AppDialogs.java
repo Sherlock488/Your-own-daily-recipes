@@ -41,6 +41,10 @@ final class AppDialogs {
     }
 
     static void showRecipeDetails(Stage owner, Recipe recipe) {
+        if (EatPlan.isEat(recipe.id())) {
+            showEatOutDetails(owner, recipe);
+            return;
+        }
         VBox details = new VBox(12);
         details.setPadding(new Insets(14));
         details.getStyleClass().add("dialog-content");
@@ -67,6 +71,27 @@ final class AppDialogs {
         details.getChildren().addAll(meta, description, ingredientsTitle,
                 ingredients, sectionTitle("How to make it"), steps);
         showScrollModal(owner, recipe.name(), 322, 520, details);
+    }
+
+    private static void showEatOutDetails(Stage owner, Recipe recipe) {
+        VBox details = new VBox(12);
+        details.setPadding(new Insets(14));
+        details.getStyleClass().add("dialog-content");
+        Label name = new Label(recipe.name());
+        name.getStyleClass().add("recipe-title");
+        name.setWrapText(true);
+        details.getChildren().add(name);
+        EatPlan.place(recipe.id()).ifPresent(place -> {
+            Label address = new Label(place.address());
+            address.getStyleClass().add("recipe-detail");
+            address.setWrapText(true);
+            Button navigate = new Button("Navigate to " + place.name());
+            navigate.getStyleClass().add("primary-button");
+            navigate.setMaxWidth(Double.MAX_VALUE);
+            navigate.setOnAction(event -> place.navigate());
+            details.getChildren().addAll(address, navigate);
+        });
+        showScrollModal(owner, "Eating Out", 322, 300, details);
     }
 
     static Optional<QuickStartSelection> showQuickStart(Stage owner) {
@@ -260,7 +285,11 @@ final class AppDialogs {
         period.setMaxWidth(Double.MAX_VALUE);
         ComboBox<Recipe> recipe = new ComboBox<>();
         recipe.getItems().setAll(RecipeCatalog.all());
-        recipe.setValue(RecipeCatalog.byId(plan.recipeId()).orElse(RecipeCatalog.all().get(0)));
+        Recipe currentRecipe = RecipeCatalog.byId(plan.recipeId()).orElse(RecipeCatalog.all().get(0));
+        if (!recipe.getItems().contains(currentRecipe)) {
+            recipe.getItems().add(0, currentRecipe);
+        }
+        recipe.setValue(currentRecipe);
         recipe.setMaxWidth(Double.MAX_VALUE);
         PlanEdit[] result = new PlanEdit[1];
         Button save = new Button("Save Changes");
@@ -311,7 +340,7 @@ final class AppDialogs {
         return Optional.ofNullable(result[0]);
     }
 
-    private static void showScrollModal(Stage owner, String title, double width,
+    static void showScrollModal(Stage owner, String title, double width,
                                        double height, Node content) {
         Stage stage = createModal(owner, title, width, height);
         ScrollPane scroll = new ScrollPane(content);
@@ -323,7 +352,7 @@ final class AppDialogs {
         stage.showAndWait();
     }
 
-    private static Stage createModal(Stage owner, String title,
+    static Stage createModal(Stage owner, String title,
                                      double width, double height) {
         Stage stage = new Stage();
         if (owner != null) {
@@ -338,7 +367,7 @@ final class AppDialogs {
         header.getStyleClass().add("dialog-header");
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(12, 14, 10, 16));
-        Label heading = new Label(title);
+        Label heading = EatDialogs.cjk(new Label(title));
         heading.getStyleClass().add("dialog-title");
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -363,18 +392,18 @@ final class AppDialogs {
         return stage;
     }
 
-    private static void setCenter(Stage stage, Node center) {
+    static void setCenter(Stage stage, Node center) {
         ((BorderPane) stage.getScene().getRoot()).setCenter(center);
     }
 
-    private static Label badge(String text) {
+    static Label badge(String text) {
         Label badge = new Label(text);
         badge.getStyleClass().add("time-badge");
         badge.setWrapText(true);
         return badge;
     }
 
-    private static Label sectionTitle(String text) {
+    static Label sectionTitle(String text) {
         Label title = new Label(text);
         title.getStyleClass().add("card-heading");
         return title;

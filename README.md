@@ -2,6 +2,37 @@
 
 Daily Menu is a JavaFX desktop application for planning meals, exploring recipe suggestions, and keeping meal plans organized by account.
 
+## Rutgers Eats (new)
+
+The **Eat** tab helps Rutgers–New Brunswick students decide where to eat:
+
+- **Dining Halls** — real menus for Busch, Livingston, Neilson and The Atrium, fetched live from
+  Rutgers Dining's Nutrislice API (`rutgers.api.nutrislice.com`). Pick a hall, day (today + 6 days)
+  and meal; search dishes; filter Vegan / Vegetarian / no milk, wheat, nuts or shellfish; tap a dish
+  for calories, protein, carbs, fat and allergens. Menus are cached under `~/.daily-menu/cache` and a
+  bundled snapshot is used offline.
+- **Restaurants** — places near campus (downtown New Brunswick, Busch/Livingston, Highland Park,
+  Edison) with menus collected from each restaurant's own website or ordering page. Search by
+  restaurant **or dish** (e.g. "ramen"), filter by area and cuisine, sort by distance from your campus.
+  Each restaurant page shows hours, phone, the menu with prices, and **Navigate** (Google Maps
+  directions), **Website** and **Order** buttons. Every menu lists its source URL and the date it
+  was checked.
+- Tap any dish to add it to your meal plan; it shows up on Home next to your home-cooked recipes.
+
+| Dining halls | Search restaurants by dish | Restaurant menu + navigation |
+|---|---|---|
+| ![](docs/screenshots/dining-halls.png) | ![](docs/screenshots/restaurant-search.png) | ![](docs/screenshots/restaurant-detail.png) |
+
+### Refreshing the data
+
+```powershell
+python scripts/scrape_dining.py          # re-scrape the bundled dining-hall snapshot (this week)
+python scripts/build_restaurants.py      # validate data/restaurants/*.json and rebuild the app resource
+```
+
+Restaurant source files live in `data/restaurants/`. Add or fix a restaurant there (keep
+`menuSource` and `verifiedOn`), then run the build script.
+
 ## Features
 
 - Create a local account or sign in to an existing account.
@@ -18,7 +49,9 @@ Daily Menu is a JavaFX desktop application for planning meals, exploring recipe 
 
 - Java 17
 - JavaFX 21.0.2
+- Gson 2.11 (JSON)
 - Maven
+- Python 3 (optional, for the data scripts)
 
 ## Run from the Source Project on Windows
 
@@ -71,7 +104,7 @@ The packaged image includes its Java runtime, so Maven and a separately installe
 
 ## Local Data
 
-Daily Menu stores account and meal-plan information locally on the computer. It does not provide cloud synchronization in this version. Keep the application data on the same computer if you want to continue using the same local accounts and plans.
+Daily Menu stores account and meal-plan information locally on the computer. It does not provide cloud synchronization in this version. The Eat tab needs internet access for live dining hall menus; without it, the last saved or bundled menu is shown. Keep the application data on the same computer if you want to continue using the same local accounts and plans.
 
 ## Troubleshooting
 
